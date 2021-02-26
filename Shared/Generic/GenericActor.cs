@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Proto;
 
 namespace DAM2.Core.Shared.Generic
@@ -8,12 +9,14 @@ namespace DAM2.Core.Shared.Generic
 
     public class GenericActor
     {
+        private readonly ILogger _logger;
 
         protected PIDValues pidValues;
         protected Props _childFactory = null;
         private Dictionary<string, PID> _actors = null;
-        public GenericActor()
+        public GenericActor(ILogger logger = default)
         {
+            _logger = logger;
             _actors = new Dictionary<string, PID>();
         }
 
@@ -48,7 +51,11 @@ namespace DAM2.Core.Shared.Generic
 
         protected PID GetQueryActor(IContext context, string tenant, string name, string queryStringBson)
         {
-            var hash = queryStringBson.GetHashCode();
+            if (queryStringBson == null)
+            {
+                throw new ArgumentNullException(nameof(queryStringBson));
+            }
+            var hash = queryStringBson.GetHashCode(StringComparison.Ordinal);
             var key = $"/query/{tenant}/{name}/{hash}";
             if (!_actors.ContainsKey(key))
             {
@@ -91,13 +98,13 @@ namespace DAM2.Core.Shared.Generic
         {
             this.pidValues = context.Self.ExtractIdValues();
 
-            Console.WriteLine($"{context.Self.Address} - Started");
+            _logger.LogInformation($"{context.Self.Address} - Started");
             return Task.CompletedTask;
         }
 
         protected Task GarbageCollect(IContext context, GarbageCollectCmd cmd)
         {
-            Console.WriteLine("It is time to Garbage Collect");
+            _logger.LogInformation("It is time to Garbage Collect");
             return Task.CompletedTask;
         }
 
