@@ -19,7 +19,6 @@ namespace DAM2.Core.Actors.Shared.Utils
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
-                int a = 1;
             }
             return "";
         }
@@ -36,7 +35,6 @@ namespace DAM2.Core.Actors.Shared.Utils
             } catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
-                int a = 1;
             }
         }
 
