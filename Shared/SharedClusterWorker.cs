@@ -61,6 +61,11 @@ namespace DAM2.Core.Shared
             try
             {
                 var system = new ActorSystem();
+                _logger.LogInformation("Setting up Cluster");
+                _logger.LogInformation("ClusterName:" + _clusterSettings.ClusterName);
+                _logger.LogInformation("PIDDatabaseName:" + _clusterSettings.PIDDatabaseName);
+                _logger.LogInformation("PIDCollectionName:" + _clusterSettings.PIDCollectionName);
+
                 var clusterProvider = _clusterProvider.CreateClusterProvider(_logger);
 
                 //var identity = RedisIdentityLookup.GetIdentityLookup(_clusterSettings.ClusterName, _clusterSettings.Host, _clusterSettings.RedisPort);

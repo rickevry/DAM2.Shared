@@ -47,8 +47,7 @@ namespace DAM2.Core.Shared
 
             try
             {
-                using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-
+                var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
                 var res = await _cluster.RequestAsync<T>(actorPath, clusterKind, cmd, tokenSource.Token).ConfigureAwait(false);
                 return res;
             }
@@ -71,7 +70,11 @@ namespace DAM2.Core.Shared
         {
             try
             {
-                _logger.LogInformation("Setting up Cluster");
+                _logger.LogInformation("Setting up Cluster without actors");
+                _logger.LogInformation("ClusterName:", _clusterSettings.ClusterName);
+                _logger.LogInformation("PIDDatabaseName:", _clusterSettings.PIDDatabaseName);
+                _logger.LogInformation("PIDCollectionName:", _clusterSettings.PIDCollectionName);
+
                 var system = new ActorSystem();
                 var clusterProvider = _clusterProvider.CreateClusterProvider(_logger);
                 

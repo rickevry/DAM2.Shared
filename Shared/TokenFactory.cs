@@ -17,7 +17,7 @@ namespace DAM2.Shared.Shared
 
 		public CancellationToken GetDefault()
 		{
-			return new CancellationTokenSource(TimeSpan.FromSeconds(15)).Token;
+			return new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
 		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using MongoDB.Driver;
 using Proto.Cluster.Identity;
 using Proto.Cluster.Identity.MongoDb;
+using System;
 
 namespace DAM2.Core.Shared
 {
@@ -19,6 +20,8 @@ namespace DAM2.Core.Shared
         {
             var url = MongoUrl.Create(connectionString);
             var settings = MongoClientSettings.FromUrl(url);
+            settings.WaitQueueTimeout = TimeSpan.FromSeconds(10);
+            settings.WaitQueueSize = 10000;
             var client = new MongoClient(settings);
             var database = client.GetDatabase(databaseName);
             return database;
