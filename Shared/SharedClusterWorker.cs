@@ -62,9 +62,9 @@ namespace DAM2.Core.Shared
             {
                 var system = new ActorSystem();
                 _logger.LogInformation("Setting up Cluster");
-                _logger.LogInformation("ClusterName:" + _clusterSettings.ClusterName);
-                _logger.LogInformation("PIDDatabaseName:" + _clusterSettings.PIDDatabaseName);
-                _logger.LogInformation("PIDCollectionName:" + _clusterSettings.PIDCollectionName);
+                _logger.LogInformation("ClusterName: " + _clusterSettings.ClusterName);
+                _logger.LogInformation("PIDDatabaseName: " + _clusterSettings.PIDDatabaseName);
+                _logger.LogInformation("PIDCollectionName: " + _clusterSettings.PIDCollectionName);
 
                 var clusterProvider = _clusterProvider.CreateClusterProvider(_logger);
 

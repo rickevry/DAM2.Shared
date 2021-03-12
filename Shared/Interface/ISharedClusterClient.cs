@@ -6,6 +6,7 @@ namespace DAM2.Core.Shared.Interface
     {
         Task<T> RequestAsync<T>(string actorPath, string clusterKind, object cmd);
 
+        Task Startup();
         Task Shutdown();
     }
 }

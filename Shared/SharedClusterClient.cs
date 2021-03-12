@@ -31,9 +31,6 @@ namespace DAM2.Core.Shared
             );
 
             Proto.Log.SetLoggerFactory(l);
-
-            Task task = CreateCluster();
-            task.Wait();
         }
 
         public async Task<T> RequestAsync<T>(string actorPath, string clusterKind,  object cmd)
@@ -58,6 +55,11 @@ namespace DAM2.Core.Shared
             }
         }
 
+        public async Task Startup()
+        {
+            await CreateCluster();
+        }
+
         public async Task Shutdown()
         {
 	        if (this._cluster != null)
@@ -71,9 +73,9 @@ namespace DAM2.Core.Shared
             try
             {
                 _logger.LogInformation("Setting up Cluster without actors");
-                _logger.LogInformation("ClusterName:", _clusterSettings.ClusterName);
-                _logger.LogInformation("PIDDatabaseName:", _clusterSettings.PIDDatabaseName);
-                _logger.LogInformation("PIDCollectionName:", _clusterSettings.PIDCollectionName);
+                _logger.LogInformation("ClusterName: " +  _clusterSettings.ClusterName);
+                _logger.LogInformation("PIDDatabaseName: " + _clusterSettings.PIDDatabaseName);
+                _logger.LogInformation("PIDCollectionName: " + _clusterSettings.PIDCollectionName);
 
                 var system = new ActorSystem();
                 var clusterProvider = _clusterProvider.CreateClusterProvider(_logger);

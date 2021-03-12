@@ -98,7 +98,7 @@ namespace DAM2.Core.Shared.Generic
         {
             this.pidValues = context.Self.ExtractIdValues();
 
-            _logger.LogInformation($"{context.Self.Address} - Started");
+            _logger.LogInformation($"GenericActor - Started");
             return Task.CompletedTask;
         }
 
