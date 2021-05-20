@@ -8,6 +8,7 @@ using Proto.Remote.GrpcCore;
 using DAM2.Core.Shared.Interface;
 using DAM2.Core.Shared.Settings;
 using DAM2.Core.Shared.Subscriptions;
+using Ubiquitous.Metrics;
 
 namespace DAM2.Core.Shared
 {
@@ -21,6 +22,7 @@ namespace DAM2.Core.Shared
         private readonly IDescriptorProvider _descriptorProvider;
         private readonly ISharedClusterProviderFactory _clusterProvider;
         private readonly ISubscriptionFactory _subscriptionFactory;
+        private readonly IMetricsProvider _metricsProvider;
         private Cluster _cluster;
 
         public async Task<bool> Run()
@@ -39,12 +41,14 @@ namespace DAM2.Core.Shared
         }
         public SharedClusterWorker(
 		ILogger<SharedClusterWorker> logger,
-		IClusterSettings clusterSettings, 
-		IDescriptorProvider descriptorProvider, 
+        IClusterSettings clusterSettings,
+        IDescriptorProvider descriptorProvider, 
 		ISharedClusterProviderFactory clusterProvider,
         ISharedSetupRootActors setupRootActors = default,
         ISubscriptionFactory subscriptionFactory = default,
-		IMainWorker mainWorker = default)
+        IMainWorker mainWorker = default,
+        IMetricsProvider metricsProvider = default
+        )
         {
             _logger = logger;
             _setupRootActors = setupRootActors;
@@ -53,6 +57,7 @@ namespace DAM2.Core.Shared
             _descriptorProvider = descriptorProvider;
             _clusterProvider = clusterProvider;
             _subscriptionFactory = subscriptionFactory;
+            _metricsProvider = metricsProvider;
         }
        
 
@@ -60,7 +65,16 @@ namespace DAM2.Core.Shared
         {
             try
             {
-                var system = new ActorSystem();
+
+                var actorSystemConfig = ActorSystemConfig.Setup();
+
+
+                if (_metricsProvider != null)
+                {
+                    actorSystemConfig.WithMetricsProviders(_metricsProvider);
+                }
+
+                var system = new ActorSystem(actorSystemConfig);
                 _logger.LogInformation("Setting up Cluster");
                 _logger.LogInformation("ClusterName: " + _clusterSettings.ClusterName);
                 _logger.LogInformation("PIDDatabaseName: " + _clusterSettings.PIDDatabaseName);
