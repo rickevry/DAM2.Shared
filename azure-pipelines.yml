@@ -1,0 +1,55 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+name: $(majorMinorVersion).$(semanticVersion)
+
+pool:
+  name: $(poolName)
+
+variables:
+  majorMinorVersion: 1.1
+  # semanticVersion counter is automatically incremented by one in each execution of pipeline
+  # second parameter is seed value to reset to every time the referenced majorMinorVersion is changed
+  semanticVersion: $[counter(variables['majorMinorVersion'], 0)]
+  projectName: 'DAM2.Shared'
+  buildConfiguration: 'Release'
+
+
+stages:
+  - stage: Build
+    displayName: Build and publish to nuget
+    jobs:
+      - job: Create
+        displayName: Create nuget package
+        steps:
+        - task: DotNetCoreCLI@2
+          displayName: Build
+          inputs:
+            projects: '**/*.csproj'
+            arguments: '--configuration $(BuildConfiguration)'
+           
+        - task: DotNetCoreCLI@2
+          displayName: 'dotnet pack [$(BuildConfiguration)]'
+          inputs:
+            command: 'pack'
+            packagesToPack: '**/$(ProjectName)*.csproj'
+            versioningScheme: byBuildNumber
+        - task: NuGetAuthenticate@0
+          displayName: 'NuGet Authenticate'
+          inputs:
+            nuGetServiceConnections: 'Nuget - DAM2.Shared'
+        - task: NuGetCommand@2
+          displayName: 'NuGet push'
+          inputs:
+            command: push
+            nuGetFeedType: external
+            versioningScheme: byEnvVar
+            versionEnvVar: $(majorMinorVersion).$(semanticVersion)
+      
+      
+
