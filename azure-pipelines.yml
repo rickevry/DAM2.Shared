@@ -18,6 +18,7 @@ variables:
   semanticVersion: $[counter(variables['majorMinorVersion'], 0)]
   projectName: 'DAM2.Shared'
   buildConfiguration: 'Release'
+  ArtifactNugetName: 'packages-nuget'
 
 
 stages:
@@ -40,18 +41,36 @@ stages:
           inputs:
             command: 'pack'
             packagesToPack: '**/$(ProjectName)*.csproj'
+            packDirectory: '$(Build.ArtifactStagingDirectory)/packages/nuget'
             versioningScheme: byBuildNumber
-        - task: NuGetAuthenticate@0
-          displayName: 'NuGet Authenticate'
-          inputs:
-            nuGetServiceConnections: 'Nuget - DAM2.Shared'
-        - task: NuGetCommand@2
-          displayName: 'NuGet push'
-          inputs:
-            command: push
-            nuGetFeedType: external
-            versioningScheme: byEnvVar
-            versionEnvVar: $(majorMinorVersion).$(semanticVersion)
-      
-      
+        
+        - publish: '$(Build.ArtifactStagingDirectory)/packages/nuget'
+          displayName: 'Publish Artifact: $(ArtifactNugetName)'
+          artifact: 'packages-nuget'
+          condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest')) 
+        # - task: NuGetAuthenticate@0
+        #   displayName: 'NuGet Authenticate'
+        #   inputs:
+        #     nuGetServiceConnections: 'Nuget - DAM2.Shared'
+        # - task: NuGetCommand@2
+        #   displayName: 'NuGet push'
+        #   inputs:
+        #     command: push
+        #     nuGetFeedType: external
+        #     versioningScheme: byEnvVar
+        #     versionEnvVar: $(majorMinorVersion).$(semanticVersion)
+        
+        - download: current
+          artifact: '$(ArtifactNugetName)'
+          displayName: 'Download nuget packages'
 
+        - task: DotNetCoreCLI@2
+          displayName: Push Nuget Package
+          inputs:
+            command: custom
+            custom: nuget
+            arguments: >
+              push $(Agent.BuildDirectory)/$(ArtifactNugetName)/*.nupkg
+              -s https://api.nuget.org/v3/index.json
+              -k $(NuGetApiKey) 
+    
