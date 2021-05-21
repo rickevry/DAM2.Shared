@@ -71,7 +71,7 @@ namespace DAM2.Core.Shared
 
                 if (_metricsProvider != null)
                 {
-                    actorSystemConfig.WithMetricsProviders(_metricsProvider);
+                    actorSystemConfig = actorSystemConfig.WithMetricsProviders(_metricsProvider);
                 }
 
                 var system = new ActorSystem(actorSystemConfig);
