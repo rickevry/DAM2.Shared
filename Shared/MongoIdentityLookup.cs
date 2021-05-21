@@ -16,12 +16,14 @@ namespace DAM2.Core.Shared
             return identity;
         }
 
+        
         private static IMongoDatabase GetMongo(string connectionString, string databaseName)
         {
             var url = MongoUrl.Create(connectionString);
             var settings = MongoClientSettings.FromUrl(url);
             settings.WaitQueueTimeout = TimeSpan.FromSeconds(10);
-            settings.WaitQueueSize = 10000;
+            //settings.WaitQueueSize = 10000;
+            
             var client = new MongoClient(settings);
             var database = client.GetDatabase(databaseName);
             return database;
