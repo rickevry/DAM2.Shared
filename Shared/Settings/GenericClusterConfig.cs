@@ -45,7 +45,9 @@ namespace DAM2.Core.Shared.Settings
             };
 
 
-            GrpcCoreRemoteConfig remoteConfig = GrpcCoreRemoteConfig.BindTo(host,port).WithAdvertisedHost(advertisedHost).WithChannelOptions(options);
+            GrpcCoreRemoteConfig remoteConfig = GrpcCoreRemoteConfig.BindTo(host,port)
+                .WithAdvertisedHost(advertisedHost)
+                .WithChannelOptions(options);
 
             foreach (var fd in descriptors)
             {
