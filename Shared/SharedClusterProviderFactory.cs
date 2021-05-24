@@ -13,7 +13,7 @@ namespace DAM2.Core.Shared
     {
 
         private readonly IClusterSettings _clusterSettings = null;
-
+        
         public SharedClusterProviderFactory(IClusterSettings clusterSettings)
         {
             _clusterSettings = clusterSettings;
@@ -23,17 +23,29 @@ namespace DAM2.Core.Shared
         {
             try
             {
-                var kubernetes = new Kubernetes(KubernetesClientConfiguration.InClusterConfig());
-                logger.LogDebug("Running with Kubernetes Provider", kubernetes.BaseUri);
-                return new KubernetesProvider(kubernetes);
+                if (this._clusterSettings.UseConsul)
+                {
+                    return UseConsul(logger);
+                }
+                return UseKubernetes(logger);
             }
             catch
             {
-                logger.LogDebug("Running with Consul Provider");
-                return new ConsulProvider(new ConsulProviderConfig(), c => {
-                    c.Address = new Uri(_clusterSettings.ConsulUri);
-                });
+                return UseConsul(logger);
             }
+        }
+
+        private IClusterProvider UseConsul(ILogger logger)
+        {
+            logger.LogDebug("Running with Consul Provider");
+            return new ConsulProvider(new ConsulProviderConfig(), c => { c.Address = new Uri(_clusterSettings.ConsulUri); });
+        }
+
+        private static IClusterProvider UseKubernetes(ILogger logger)
+        {
+            var kubernetes = new Kubernetes(KubernetesClientConfiguration.InClusterConfig());
+            logger.LogDebug("Running with Kubernetes Provider", kubernetes.BaseUri);
+            return new KubernetesProvider(kubernetes);
         }
     }
 }

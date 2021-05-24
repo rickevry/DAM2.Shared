@@ -10,5 +10,7 @@
         public string PIDCollectionName { get; set; }
         public string PIDDatabaseName { get; set; }
         public string ConsulUri { get; set; }
+
+        public bool UseConsul { get; set; }
     }
 }
