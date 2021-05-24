@@ -11,7 +11,7 @@ namespace DAM2.Core.Shared
         {
             var db = GetMongo(connectionString, pidDatabaseName);
             var identity = new IdentityStorageLookup(
-                new MongoIdentityStorage(clusterName, db.GetCollection<PidLookupEntity>(pidCollection))
+                new MongoIdentityStorage(clusterName, db.GetCollection<PidLookupEntity>(pidCollection), 200)
             );
             return identity;
         }
@@ -21,7 +21,7 @@ namespace DAM2.Core.Shared
         {
             var url = MongoUrl.Create(connectionString);
             var settings = MongoClientSettings.FromUrl(url);
-            settings.WaitQueueTimeout = TimeSpan.FromSeconds(10);
+            //settings.WaitQueueTimeout = TimeSpan.FromSeconds(10);
             //settings.WaitQueueSize = 10000;
             
             var client = new MongoClient(settings);
