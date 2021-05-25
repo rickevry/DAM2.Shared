@@ -25,12 +25,6 @@ namespace DAM2.Core.Shared
             _descriptorProvider = descriptorProvider;
             _clusterSettings = clusterSettings;
             _clusterProvider = clusterProvider;
-            
-            var l = LoggerFactory.Create(l =>
-                l.AddConsole().SetMinimumLevel(LogLevel.Information)
-            );
-
-            Proto.Log.SetLoggerFactory(l);
         }
 
         public async Task<T> RequestAsync<T>(string actorPath, string clusterKind,  object cmd)
@@ -51,6 +45,7 @@ namespace DAM2.Core.Shared
             }
             catch (TimeoutException)
             {
+	            _logger.LogInformation("Recreate cluster because of timeout...");
                 await this.CreateCluster();
                 return await RequestAsync<T>(actorPath, clusterKind, cmd);
             }

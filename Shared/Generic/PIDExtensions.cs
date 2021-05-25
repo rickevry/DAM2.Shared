@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Proto;
 
+
 namespace DAM2.Core.Shared.Generic
 {
 	public class PIDValues
