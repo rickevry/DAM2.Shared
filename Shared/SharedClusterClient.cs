@@ -45,8 +45,14 @@ namespace DAM2.Core.Shared
             try
             {
                 var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-                var res = await _cluster.RequestAsync<T>(actorPath, clusterKind, cmd, tokenSource.Token).ConfigureAwait(false);
+                var res = await _cluster.RequestAsync<T>(actorPath, clusterKind, cmd, tokenSource.Token)
+                    .ConfigureAwait(false);
                 return res;
+            }
+            catch (TimeoutException)
+            {
+                await this.CreateCluster();
+                return await RequestAsync<T>(actorPath, clusterKind, cmd);
             }
             catch (Exception x)
             {
