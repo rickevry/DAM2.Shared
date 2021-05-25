@@ -22,12 +22,12 @@ message ClusterIdentity{
 }
 
 message Activation {
-    .actor.PID pid = 1;    
+    actor.PID pid = 1;    
     ClusterIdentity cluster_identity = 2;
 }
 
 message ActivationTerminated {
-    .actor.PID pid = 1;
+    actor.PID pid = 1;
     ClusterIdentity cluster_identity = 2;
 }
 
@@ -38,7 +38,7 @@ message ActivationRequest {
 
 message ProxyActivationRequest {
   ClusterIdentity cluster_identity = 1;
-  .actor.PID replaced_activation = 2;
+  actor.PID replaced_activation = 2;
 }
 
 message ActivationResponse {
@@ -98,7 +98,7 @@ message GracefulShutdown {
 
 message SubscriberIdentity {
   oneof Identity {
-    .actor.PID pid = 1;
+    actor.PID pid = 1;
     ClusterIdentity cluster_identity = 2;
   }
 }
