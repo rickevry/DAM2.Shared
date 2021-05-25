@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <LangVersion>9</LangVersion>
-    <TargetFrameworks>netstandard2.1;net5.0</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Version>1.0.12</Version>
     <Authors>Rickard Nilsson</Authors>
     <Company>TietoEvry</Company>
@@ -25,6 +25,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Imports\Proto.Cluster\ClusterConfigs.proto" />
+    <None Remove="Imports\Proto.Cluster\Protos.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Consul" Version="1.6.1.1" />
+    <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
@@ -49,7 +56,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Imports\Proto.Cluster\ClusterContracts.proto" GrpcServices="Server" AdditionalImportDirs="." />
+    <Protobuf Include="Imports\Proto.Cluster\ClusterConfigs.proto" GrpcServices="Server" AdditionalImportDirs="." />
     <Protobuf Include="Imports\Proto.Cluster\Protos.proto" GrpcServices="Server" />
   </ItemGroup>
 
