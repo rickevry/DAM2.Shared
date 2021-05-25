@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9</LangVersion>
+    <TargetFrameworks>netstandard2.1;net5.0</TargetFrameworks>
     <Version>1.0.12</Version>
     <Authors>Rickard Nilsson</Authors>
     <Company>TietoEvry</Company>
@@ -17,7 +18,6 @@
     <DebugType>embedded</DebugType>
     <AssemblyVersion>1.0.12.0</AssemblyVersion>
     <FileVersion>1.0.12.0</FileVersion>
-    
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,8 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Imports\Proto.Cluster\ClusterContracts.proto" GrpcServices="Server">      
-    </Protobuf>
+    <Protobuf Include="Imports\Proto.Cluster\ClusterContracts.proto" GrpcServices="Server" />
     <Protobuf Include="Imports\Proto.Cluster\Protos.proto" GrpcServices="Server" />
   </ItemGroup>
 
