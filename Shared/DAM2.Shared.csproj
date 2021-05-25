@@ -40,7 +40,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.15" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
-    <PackageReference Include="Proto.Actor" Version="0.17.0" GeneratePathProperty="true" />
+    <PackageReference Include="Proto.Actor" Version="0.17.0" />
     <PackageReference Include="Proto.Cluster" Version="0.17.0" />
     <PackageReference Include="Proto.Cluster.Consul" Version="0.17.0" />
     <PackageReference Include="Proto.Cluster.Identity.MongoDb" Version="0.17.0" />
