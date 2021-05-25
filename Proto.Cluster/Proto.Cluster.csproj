@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
+    <LangVersion>9</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Grpc.Tools" Version="2.36.4" PrivateAssets="All" />
+    <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
+  </ItemGroup>
+  <ItemGroup><!--<ProjectReference Include="..\Proto.Remote\Proto.Remote.csproj" />-->
+  
+    <PackageReference Include="Proto.Remote" Version="0.17.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Protobuf Include="ClusterContracts.proto" GrpcServices="Server" AdditionalImportDirs=".; ..\..\src" />
+  </ItemGroup>
+</Project>
