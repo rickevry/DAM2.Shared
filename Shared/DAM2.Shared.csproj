@@ -25,11 +25,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Imports\Proto.Cluster\ClusterConfigs.proto" />
-    <None Remove="Imports\Proto.Cluster\Protos.proto" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Consul" Version="1.6.1.1" />
     <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
@@ -53,11 +48,6 @@
     <PackageReference Include="Scrutor" Version="3.3.0" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Ubiquitous.Metrics" Version="0.2.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Protobuf Include="Imports\Proto.Cluster\ClusterConfigs.proto" GrpcServices="Server" AdditionalImportDirs="." />
-    <Protobuf Include="Imports\Proto.Cluster\Protos.proto" GrpcServices="Server" />
   </ItemGroup>
 
 </Project>
