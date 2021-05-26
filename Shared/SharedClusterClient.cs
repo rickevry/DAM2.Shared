@@ -41,7 +41,7 @@ namespace DAM2.Core.Shared
 
             try
             {
-                var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
                 var res = await _cluster.RequestAsync<T>(actorPath, clusterKind, cmd, tokenSource.Token)
                     .ConfigureAwait(false);
 
@@ -61,8 +61,8 @@ namespace DAM2.Core.Shared
                     _logger.LogError("Request timeout for {Id}", actorPath);
                     return default(T);
                 }
-	            _logger.LogInformation("Recreate cluster because of timeout...");
-                await this.CreateCluster();
+	            _logger.LogInformation("Retry request...");
+                
                 return await RequestAsync<T>(actorPath, clusterKind, cmd);
             }
             catch (Exception x)
