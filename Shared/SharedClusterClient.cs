@@ -107,8 +107,9 @@ namespace DAM2.Core.Shared
                 var remote = new GrpcCoreRemote(system, remoteConfig);
                 var cluster = new Cluster(system, clusterConfig);
 
-                await cluster.StartMemberAsync().ConfigureAwait(false);
-
+                await cluster.StartClientAsync().ConfigureAwait(false);
+                
+                
                 _cluster = cluster;
                 _cluster_ready = true;
 
