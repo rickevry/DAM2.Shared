@@ -35,24 +35,23 @@ namespace DAM2.Core.Shared.Settings
             _logger.LogDebug($"WithAdvertisedHost to {advertisedHost}");
 
             FileDescriptor[] descriptors = descriptorProvider.GetDescriptors();
-
+            
 
             // TOOD: This doesn't seem to work. Why?
             List<ChannelOption> options = new List<ChannelOption>()
             {
-                new ChannelOption(ChannelOptions.MaxSendMessageLength, (100 * 1024 * 1024)),
+                
+	            new ChannelOption(ChannelOptions.MaxSendMessageLength, (100 * 1024 * 1024)),
                 new ChannelOption(ChannelOptions.MaxReceiveMessageLength, (100 * 1024 * 1024))
             };
 
 
             GrpcCoreRemoteConfig remoteConfig = GrpcCoreRemoteConfig.BindTo(host,port)
-                .WithAdvertisedHost(advertisedHost)
+	            .WithEndpointWriterMaxRetries(0)
+	            .WithRemoteDiagnostics(true)
+	            .WithAdvertisedHost(advertisedHost)
+	            .WithProtoMessages(descriptors)
                 .WithChannelOptions(options);
-
-            foreach (var fd in descriptors)
-            {
-                remoteConfig.Serialization.RegisterFileDescriptor(fd);
-            }
 
             var clusterConfig = ClusterConfig.Setup(clusterName, clusterProvider, identityLookup);
             return (clusterConfig, remoteConfig);

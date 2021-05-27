@@ -24,54 +24,52 @@ namespace DAM2.Core.Shared
         private readonly ISubscriptionFactory _subscriptionFactory;
         private readonly IMetricsProvider _metricsProvider;
         private Cluster _cluster;
+        private Task _mainWorkerTask;
+        private CancellationTokenSource _cancellationTokenSource;
 
+        public SharedClusterWorker(
+	        ILogger<SharedClusterWorker> logger,
+	        IClusterSettings clusterSettings,
+	        IDescriptorProvider descriptorProvider,
+	        ISharedClusterProviderFactory clusterProvider,
+	        ISharedSetupRootActors setupRootActors = default,
+	        ISubscriptionFactory subscriptionFactory = default,
+	        IMainWorker mainWorker = default,
+	        IMetricsProvider metricsProvider = default
+        )
+        {
+	        _logger = logger;
+	        _setupRootActors = setupRootActors;
+	        _clusterSettings = clusterSettings;
+	        _mainWorker = mainWorker;
+	        _descriptorProvider = descriptorProvider;
+	        _clusterProvider = clusterProvider;
+	        _subscriptionFactory = subscriptionFactory;
+	        _metricsProvider = metricsProvider;
+	        _cancellationTokenSource = new CancellationTokenSource();
+        }
         public async Task<bool> Run()
         {
-
-            _cluster = await CreateCluster().ConfigureAwait(false);
+	        _cluster = await CreateCluster().ConfigureAwait(false);
 
             if (_mainWorker != null)
             {
-                await _mainWorker.Run(_cluster).ConfigureAwait(false);
+	            this._mainWorkerTask = SafeTask.Run(() => _mainWorker.Run(_cluster), _cancellationTokenSource.Token);
             }
-
-            _logger.LogInformation("Ending app");
 
             return true;
         }
-        public SharedClusterWorker(
-		ILogger<SharedClusterWorker> logger,
-        IClusterSettings clusterSettings,
-        IDescriptorProvider descriptorProvider, 
-		ISharedClusterProviderFactory clusterProvider,
-        ISharedSetupRootActors setupRootActors = default,
-        ISubscriptionFactory subscriptionFactory = default,
-        IMainWorker mainWorker = default,
-        IMetricsProvider metricsProvider = default
-        )
-        {
-            _logger = logger;
-            _setupRootActors = setupRootActors;
-            _clusterSettings = clusterSettings;
-            _mainWorker = mainWorker;
-            _descriptorProvider = descriptorProvider;
-            _clusterProvider = clusterProvider;
-            _subscriptionFactory = subscriptionFactory;
-            _metricsProvider = metricsProvider;
-        }
-       
 
         public async Task<Cluster> CreateCluster()
         {
             try
             {
+	            var actorSystemConfig = ActorSystemConfig.Setup();
 
-                var actorSystemConfig = ActorSystemConfig.Setup();
-
-
-                if (_metricsProvider != null)
+	            if (_metricsProvider != null)
                 {
-                    actorSystemConfig = actorSystemConfig.WithMetricsProviders(_metricsProvider);
+                    actorSystemConfig = actorSystemConfig
+	                    .WithMetricsProviders(_metricsProvider);
                 }
 
                 var system = new ActorSystem(actorSystemConfig);
@@ -99,6 +97,7 @@ namespace DAM2.Core.Shared
 
                 if(this._subscriptionFactory != null)
                 {
+                    _logger.LogInformation("Fire up subscriptions for system {id} {address}", system.Id, system.Address);
 	                await this._subscriptionFactory.FireUp(system).ConfigureAwait(false);
                 }
                 
@@ -114,6 +113,7 @@ namespace DAM2.Core.Shared
         public Lazy<Cluster> Cluster => new Lazy<Cluster>(() => this._cluster ?? this.CreateCluster().ConfigureAwait(false).GetAwaiter().GetResult());
         public async Task Shutdown()
         {
+            _cancellationTokenSource.Cancel(false);
 	        if (this._cluster != null)
 	        {
 		        await this._cluster.ShutdownAsync(true).ConfigureAwait(false);

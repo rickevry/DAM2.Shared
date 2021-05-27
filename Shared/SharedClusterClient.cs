@@ -29,49 +29,6 @@ namespace DAM2.Core.Shared
             _clusterProvider = clusterProvider;
         }
 
-        public async Task<T> RequestAsync<T>(string actorPath, string clusterKind,  object cmd)
-        {
-            string key = $"{actorPath}_{clusterKind}";
-            int counter = 0;
-            while (!_cluster_ready && counter < 40)
-            {
-                await Task.Delay(250).ConfigureAwait(false);
-                counter++;
-            }
-
-            try
-            {
-                var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-                var res = await _cluster.RequestAsync<T>(actorPath, clusterKind, cmd, tokenSource.Token)
-                    .ConfigureAwait(false);
-
-                retries.Remove(key);
-                
-                return res;
-            }
-            catch (TimeoutException)
-            {
-                if (retries.TryGetValue(key, out int value))
-                {
-                    Interlocked.Increment(ref value);
-                }
-
-                if (value > 5)
-                {
-                    _logger.LogError("Request timeout for {Id}", actorPath);
-                    return default(T);
-                }
-	            _logger.LogInformation("Retry request...");
-                
-                return await RequestAsync<T>(actorPath, clusterKind, cmd);
-            }
-            catch (Exception x)
-            {
-                _logger.LogError(x, "Failed Request {Id}", actorPath);
-                return default(T);
-            }
-        }
-
         public async Task Startup()
         {
             await CreateCluster();
@@ -83,8 +40,8 @@ namespace DAM2.Core.Shared
 	        {
 		        await this._cluster.ShutdownAsync(true).ConfigureAwait(false);
             }
-	        
         }
+
         public async Task<Cluster> CreateCluster()
         {
             try
@@ -122,7 +79,48 @@ namespace DAM2.Core.Shared
                 _logger.LogError(ex, "SharedClusterClient failed");
                 return null;
             }
+        }
 
+        public async Task<T> RequestAsync<T>(string actorPath, string clusterKind, object cmd)
+        {
+	        string key = $"{actorPath}_{clusterKind}";
+	        int counter = 0;
+	        while (!_cluster_ready && counter < 40)
+	        {
+		        await Task.Delay(250).ConfigureAwait(false);
+		        counter++;
+	        }
+
+	        try
+	        {
+		        var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+		        var res = await _cluster.RequestAsync<T>(actorPath, clusterKind, cmd, tokenSource.Token).ConfigureAwait(false);
+
+		        retries.Remove(key);
+
+		        return res;
+	        }
+	        catch (TimeoutException)
+	        {
+		        if (retries.TryGetValue(key, out int value))
+		        {
+			        Interlocked.Increment(ref value);
+		        }
+
+		        if (value > 5)
+		        {
+			        _logger.LogError("Request timeout for {Id}", actorPath);
+			        return default(T);
+		        }
+		        _logger.LogInformation("Retry request...");
+
+		        return await RequestAsync<T>(actorPath, clusterKind, cmd);
+	        }
+	        catch (Exception x)
+	        {
+		        _logger.LogError(x, "Failed Request {Id}", actorPath);
+		        return default(T);
+	        }
         }
     }
 }
