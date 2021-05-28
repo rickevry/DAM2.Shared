@@ -106,13 +106,11 @@ namespace DAM2.Core.Shared
 
                 _ = SafeTask.Run(async () =>
                 {
-<<<<<<< HEAD
-                    int counter = 0;
+	                int counter = 0;
                     while (true)
                     {
                         Member[] members = cluster.MemberList.GetAllMembers();
                         string[] clusterKinds = cluster.GetClusterKinds();
-                        
 
                         if (clusterKinds.Length == 0)
                         {
@@ -141,22 +139,6 @@ namespace DAM2.Core.Shared
 
                         await Task.Delay(500);
                     }
-=======
-	                while (true)
-	                {
-		                Member[] members = cluster.MemberList.GetAllMembers();
-
-		                this.Connected = members.Length > 0;
-		                _logger.LogInformation("[SharedClusterWorker] Connected {Connected}");
-		                if (this.Connected)
-		                {
-			                _logger.LogInformation("[SharedClusterWorker] Members {@Members}",
-				                members.Select(m => m.ToLogString()));
-		                }
-
-		                await Task.Delay(500);
-	                }
->>>>>>> 1464fd6d919bc8b9a05477dbb8724f643b05f717
                 });
 
                 return cluster;
@@ -168,7 +150,7 @@ namespace DAM2.Core.Shared
             }
         }
 
-        public bool Connected { get; set; }
+        
 
         public Lazy<Cluster> Cluster => new Lazy<Cluster>(() => this._cluster ?? this.CreateCluster().ConfigureAwait(false).GetAwaiter().GetResult());
         public async Task Shutdown()
