@@ -93,7 +93,8 @@ namespace DAM2.Core.Shared
                     clusterConfig = _setupRootActors.AddRootActors(clusterConfig);
                 }
 
-                var remote = new GrpcCoreRemote(system, remoteConfig);
+                _ = new GrpcCoreRemote(system, remoteConfig);
+                
                 var cluster = new Cluster(system, clusterConfig);
 
                 await cluster.StartMemberAsync().ConfigureAwait(false);
@@ -106,40 +107,49 @@ namespace DAM2.Core.Shared
 
                 _ = SafeTask.Run(async () =>
                 {
-	                int counter = 0;
-                    while (true)
-                    {
-                        Member[] members = cluster.MemberList.GetAllMembers();
-                        string[] clusterKinds = cluster.GetClusterKinds();
+	                try
+	                {
+		                int counter = 0;
+		                while (!_cancellationTokenSource.IsCancellationRequested)
+		                {
+			                Member[] members = cluster.MemberList.GetAllMembers();
+			                string[] clusterKinds = cluster.GetClusterKinds();
 
-                        if (clusterKinds.Length == 0)
-                        {
-                            _logger.LogInformation("[SharedClusterWorker] clusterKinds {clusterKinds}", clusterKinds.Length);
-                            _logger.LogInformation("[SharedClusterWorker] Restarting");
-                            _ = this.RestartMe();
-                            break;
-                        }
+			                if (clusterKinds.Length == 0)
+			                {
+				                _logger.LogInformation("[SharedClusterWorker] clusterKinds {clusterKinds}", clusterKinds.Length);
+				                _logger.LogInformation("[SharedClusterWorker] Restarting");
+				                _ = this.RestartMe();
+				                break;
+			                }
 
-                        this.Connected = members.Length > 0;
-                        if (!this.Connected)
-                        {
-                            counter = 0;
-                            _logger.LogInformation("[SharedClusterWorker] Connected {Connected}", this.Connected);
-                        }
+			                this.Connected = members.Length > 0;
+			                if (!this.Connected)
+			                {
+				                counter = 0;
+				                _logger.LogInformation("[SharedClusterWorker] Connected {Connected}", this.Connected);
+			                }
 
-                        if (this.Connected)
-                        {
-                            if (counter % 20 == 0)
-                            {
-                                _logger.LogInformation("[SharedClusterWorker] Members {@Members}",
-                                    members.Select(m => m.ToLogString()));
-                            }
-                            counter++;
-                        }
+			                if (this.Connected)
+			                {
+				                if (counter % 20 == 0)
+				                {
+					                _logger.LogInformation("[SharedClusterWorker] Members {@Members}",
+						                members.Select(m => m.ToLogString()));
+				                }
+				                counter++;
+			                }
 
-                        await Task.Delay(500);
+			                await Task.Delay(500);
+		                }
                     }
-                });
+	                catch
+	                {
+		                // ignored
+	                }
+
+	                
+                }, _cancellationTokenSource.Token);
 
                 return cluster;
             }

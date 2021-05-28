@@ -68,7 +68,7 @@ namespace DAM2.Core.Shared
 
 				//clusterConfig = _setupRootActors.AddRootActors(clusterConfig);
 
-				var remote = new GrpcCoreRemote(system, remoteConfig);
+				_ = new GrpcCoreRemote(system, remoteConfig);
 				var cluster = new Cluster(system, clusterConfig);
 
 				await cluster.StartClientAsync().ConfigureAwait(false);
@@ -76,29 +76,36 @@ namespace DAM2.Core.Shared
 				_ = SafeTask.Run(async () =>
 				{
 					int counter = 0;
-					while (true)
+					while (!connectedTokenSource.Token.IsCancellationRequested)
 					{
-						Member[] members = _cluster.MemberList.GetAllMembers();
-
-						this.Connected = members.Length > 0;
-
-						if (!this.Connected)
+						try
 						{
-							counter = 0;
-							_logger.LogInformation("[SharedClusterClient] Connected {Connected}", this.Connected);
-						}
+							Member[] members = _cluster.MemberList.GetAllMembers();
 
-						if (this.Connected)
-						{
-							if (counter % 20 == 0 || counter == 0)
+							this.Connected = members.Length > 0;
+
+							if (!this.Connected)
 							{
-								_logger.LogInformation("[SharedClusterClient] Members {@Members}",
-									members.Select(m => m.ToLogString()));
+								counter = 0;
+								_logger.LogInformation("[SharedClusterClient] Connected {Connected}", this.Connected);
 							}
-							counter++;
-						}
 
-						await Task.Delay(500);
+							if (this.Connected)
+							{
+								if (counter % 20 == 0 || counter == 0)
+								{
+									_logger.LogInformation("[SharedClusterClient] Members {@Members}",
+										members.Select(m => m.ToLogString()));
+								}
+								counter++;
+							}
+
+							await Task.Delay(500);
+						}
+						catch
+						{
+							// ignored
+						}
 					}
 				}, connectedTokenSource.Token);
 
