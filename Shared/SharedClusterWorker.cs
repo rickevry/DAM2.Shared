@@ -169,8 +169,15 @@ namespace DAM2.Core.Shared
             _ = SafeTask.Run(async () =>
             {
                 await Task.Delay(2000);
-                await this.Shutdown();
+                try{await this.Shutdown(); }
+                catch
+                {
+	                // ignored
+                }
+
                 _cluster = null;
+                await Task.Delay(5000);
+                
                 _cancellationTokenSource = new CancellationTokenSource();
                 await this.Run();
                 await Task.Delay(2000);
