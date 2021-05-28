@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ namespace DAM2.Core.Shared
         private Cluster _cluster;
         private Task _mainWorkerTask;
         private CancellationTokenSource _cancellationTokenSource;
+        private bool Connected;
 
         public SharedClusterWorker(
 	        ILogger<SharedClusterWorker> logger,
@@ -100,7 +102,25 @@ namespace DAM2.Core.Shared
                     _logger.LogInformation("Fire up subscriptions for system {id} {address}", system.Id, system.Address);
 	                await this._subscriptionFactory.FireUp(system).ConfigureAwait(false);
                 }
-                
+
+                _ = SafeTask.Run(async () =>
+                {
+	                while (true)
+	                {
+		                Member[] members = cluster.MemberList.GetAllMembers();
+
+		                this.Connected = members.Length > 0;
+		                _logger.LogInformation("[SharedClusterWorker] Connected {Connected}");
+		                if (this.Connected)
+		                {
+			                _logger.LogInformation("[SharedClusterWorker] Members {@Members}",
+				                members.Select(m => m.ToLogString()));
+		                }
+
+		                await Task.Delay(500);
+	                }
+                });
+
                 return cluster;
             }
             catch (Exception ex)
@@ -117,7 +137,8 @@ namespace DAM2.Core.Shared
 	        if (this._cluster != null)
 	        {
 		        await this._cluster.ShutdownAsync(true).ConfigureAwait(false);
-	        }
+		        await Task.Delay(1000);
+            }
         }
     }
 }
