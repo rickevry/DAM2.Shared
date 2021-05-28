@@ -136,7 +136,8 @@ namespace DAM2.Core.Shared
 
 		        if (tokenSource.Token.IsCancellationRequested)
 		        {
-			        await RestartMe();
+			        _cluster_ready = false;
+                    await RestartMe();
 			        return await Retry<T>(actorPath, clusterKind, cmd, key);
 		        }
 		        retries.Remove(key);
