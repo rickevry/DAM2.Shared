@@ -8,6 +8,7 @@ using Proto.Remote.GrpcCore;
 using DAM2.Core.Shared.Interface;
 using DAM2.Core.Shared.Settings;
 using DAM2.Core.Shared.Subscriptions;
+using System.Linq;
 using Ubiquitous.Metrics;
 
 namespace DAM2.Core.Shared
@@ -28,33 +29,33 @@ namespace DAM2.Core.Shared
         private CancellationTokenSource _cancellationTokenSource;
 
         public SharedClusterWorker(
-	        ILogger<SharedClusterWorker> logger,
-	        IClusterSettings clusterSettings,
-	        IDescriptorProvider descriptorProvider,
-	        ISharedClusterProviderFactory clusterProvider,
-	        ISharedSetupRootActors setupRootActors = default,
-	        ISubscriptionFactory subscriptionFactory = default,
-	        IMainWorker mainWorker = default,
-	        IMetricsProvider metricsProvider = default
+            ILogger<SharedClusterWorker> logger,
+            IClusterSettings clusterSettings,
+            IDescriptorProvider descriptorProvider,
+            ISharedClusterProviderFactory clusterProvider,
+            ISharedSetupRootActors setupRootActors = default,
+            ISubscriptionFactory subscriptionFactory = default,
+            IMainWorker mainWorker = default,
+            IMetricsProvider metricsProvider = default
         )
         {
-	        _logger = logger;
-	        _setupRootActors = setupRootActors;
-	        _clusterSettings = clusterSettings;
-	        _mainWorker = mainWorker;
-	        _descriptorProvider = descriptorProvider;
-	        _clusterProvider = clusterProvider;
-	        _subscriptionFactory = subscriptionFactory;
-	        _metricsProvider = metricsProvider;
-	        _cancellationTokenSource = new CancellationTokenSource();
+            _logger = logger;
+            _setupRootActors = setupRootActors;
+            _clusterSettings = clusterSettings;
+            _mainWorker = mainWorker;
+            _descriptorProvider = descriptorProvider;
+            _clusterProvider = clusterProvider;
+            _subscriptionFactory = subscriptionFactory;
+            _metricsProvider = metricsProvider;
+            _cancellationTokenSource = new CancellationTokenSource();
         }
         public async Task<bool> Run()
         {
-	        _cluster = await CreateCluster().ConfigureAwait(false);
+            _cluster = await CreateCluster().ConfigureAwait(false);
 
             if (_mainWorker != null)
             {
-	            this._mainWorkerTask = SafeTask.Run(() => _mainWorker.Run(_cluster), _cancellationTokenSource.Token);
+                this._mainWorkerTask = SafeTask.Run(() => _mainWorker.Run(_cluster), _cancellationTokenSource.Token);
             }
 
             return true;
@@ -64,12 +65,12 @@ namespace DAM2.Core.Shared
         {
             try
             {
-	            var actorSystemConfig = ActorSystemConfig.Setup();
+                var actorSystemConfig = ActorSystemConfig.Setup();
 
-	            if (_metricsProvider != null)
+                if (_metricsProvider != null)
                 {
                     actorSystemConfig = actorSystemConfig
-	                    .WithMetricsProviders(_metricsProvider);
+                        .WithMetricsProviders(_metricsProvider);
                 }
 
                 var system = new ActorSystem(actorSystemConfig);
@@ -87,7 +88,7 @@ namespace DAM2.Core.Shared
 
                 if (_setupRootActors != null)
                 {
-	                clusterConfig = _setupRootActors.AddRootActors(clusterConfig);
+                    clusterConfig = _setupRootActors.AddRootActors(clusterConfig);
                 }
 
                 var remote = new GrpcCoreRemote(system, remoteConfig);
@@ -95,12 +96,50 @@ namespace DAM2.Core.Shared
 
                 await cluster.StartMemberAsync().ConfigureAwait(false);
 
-                if(this._subscriptionFactory != null)
+                if (this._subscriptionFactory != null)
                 {
                     _logger.LogInformation("Fire up subscriptions for system {id} {address}", system.Id, system.Address);
-	                await this._subscriptionFactory.FireUp(system).ConfigureAwait(false);
+                    await this._subscriptionFactory.FireUp(system).ConfigureAwait(false);
                 }
-                
+
+                _ = SafeTask.Run(async () =>
+                {
+                    int counter = 0;
+                    while (true)
+                    {
+                        Member[] members = cluster.MemberList.GetAllMembers();
+                        string[] clusterKinds = cluster.GetClusterKinds();
+                        
+
+                        if (clusterKinds.Length == 0)
+                        {
+                            _logger.LogInformation("[SharedClusterWorker] clusterKinds {clusterKinds}", clusterKinds.Length);
+                            _logger.LogInformation("[SharedClusterWorker] Restarting");
+                            _ = this.RestartMe();
+                            break;
+                        }
+
+                        this.Connected = members.Length > 0;
+                        if (!this.Connected)
+                        {
+                            counter = 0;
+                            _logger.LogInformation("[SharedClusterWorker] Connected {Connected}", this.Connected);
+                        }
+
+                        if (this.Connected)
+                        {
+                            if (counter % 20 == 0)
+                            {
+                                _logger.LogInformation("[SharedClusterWorker] Members {@Members}",
+                                    members.Select(m => m.ToLogString()));
+                            }
+                            counter++;
+                        }
+
+                        await Task.Delay(500);
+                    }
+                });
+
                 return cluster;
             }
             catch (Exception ex)
@@ -110,14 +149,32 @@ namespace DAM2.Core.Shared
             }
         }
 
+        public bool Connected { get; set; }
+
         public Lazy<Cluster> Cluster => new Lazy<Cluster>(() => this._cluster ?? this.CreateCluster().ConfigureAwait(false).GetAwaiter().GetResult());
         public async Task Shutdown()
         {
             _cancellationTokenSource.Cancel(false);
-	        if (this._cluster != null)
-	        {
-		        await this._cluster.ShutdownAsync(true).ConfigureAwait(false);
-	        }
+            if (this._cluster != null)
+            {
+                await this._cluster.ShutdownAsync(true).ConfigureAwait(false);
+                await Task.Delay(3000);
+            }
+        }
+
+        private Task RestartMe()
+        {
+            _ = SafeTask.Run(async () =>
+            {
+                await Task.Delay(2000);
+                await this.Shutdown();
+                _cluster = null;
+                _cancellationTokenSource = new CancellationTokenSource();
+                await this.Run();
+                await Task.Delay(2000);
+            });
+
+            return Task.CompletedTask;
         }
     }
 }
