@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DAM2.Core.Shared;
 using DAM2.Core.Shared.Interface;
 using DnsClient.Internal;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -16,12 +17,17 @@ namespace DAM2.Shared
     {
 	    private readonly ILogger<ProtoActorClientHostedService> logger;
 	    private readonly ISharedClusterClient sharedClusterClient;
+	    private readonly IConfiguration configuration;
 	    private readonly IHostApplicationLifetime applicationLifetime;
 
-	    public ProtoActorClientHostedService(ILogger<ProtoActorClientHostedService> logger, ISharedClusterClient sharedClusterClient, IHostApplicationLifetime applicationLifetime)
+	    public ProtoActorClientHostedService(ILogger<ProtoActorClientHostedService> logger, 
+		    ISharedClusterClient sharedClusterClient, 
+			IConfiguration configuration,
+		    IHostApplicationLifetime applicationLifetime)
 	    {
 		    this.logger = logger;
 		    this.sharedClusterClient = sharedClusterClient;
+		    this.configuration = configuration;
 		    this.applicationLifetime = applicationLifetime;
 	    }
 	    public async Task StartAsync(CancellationToken cancellationToken)
@@ -46,8 +52,11 @@ namespace DAM2.Shared
 	    private void OnStopping()
 	    {
 		    logger.LogInformation("SIGTERM received, waiting for 30 seconds");
-		    Thread.Sleep(30_000);
-		    logger.LogInformation("Termination delay complete, continuing stopping process");
+			if (this.configuration.GetChildren().Any(c => c.Key.StartsWith("Kubernetes", StringComparison.OrdinalIgnoreCase)))
+			{
+				Thread.Sleep(30_000);
+			}
+			logger.LogInformation("Termination delay complete, continuing stopping process");
 	    }
 
 	    private void OnStarted()
