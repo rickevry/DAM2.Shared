@@ -10,6 +10,7 @@ using DAM2.Core.Shared.Interface;
 using DAM2.Core.Shared.Settings;
 using DAM2.Core.Shared.Subscriptions;
 using System.Linq;
+using Microsoft.Extensions.Hosting;
 using Ubiquitous.Metrics;
 
 namespace DAM2.Core.Shared
@@ -17,47 +18,46 @@ namespace DAM2.Core.Shared
     public class SharedClusterWorker : ISharedClusterWorker
     {
 
-        private readonly ILogger<SharedClusterWorker> _logger;
-        private readonly ISharedSetupRootActors _setupRootActors;
-        private readonly IClusterSettings _clusterSettings;
-        private readonly IMainWorker _mainWorker;
-        private readonly IDescriptorProvider _descriptorProvider;
-        private readonly ISharedClusterProviderFactory _clusterProvider;
-        private readonly ISubscriptionFactory _subscriptionFactory;
-        private readonly IMetricsProvider _metricsProvider;
-        private Cluster _cluster;
-        private Task _mainWorkerTask;
-        private CancellationTokenSource _cancellationTokenSource;
-        private bool Connected;
-
+        private readonly ILogger<SharedClusterWorker> logger;
+        private readonly ISharedSetupRootActors setupRootActors;
+        private readonly IClusterSettings clusterSettings;
+        private readonly IMainWorker mainWorker;
+        private readonly IDescriptorProvider descriptorProvider;
+        private readonly ISharedClusterProviderFactory clusterProviderFactory;
+        private readonly IHostApplicationLifetime applicationLifetime;
+        private readonly ISubscriptionFactory subscriptionFactory;
+        private readonly IMetricsProvider metricsProvider;
+        private Cluster cluster;
+        
         public SharedClusterWorker(
             ILogger<SharedClusterWorker> logger,
             IClusterSettings clusterSettings,
             IDescriptorProvider descriptorProvider,
-            ISharedClusterProviderFactory clusterProvider,
+            ISharedClusterProviderFactory clusterProviderFactory,
+            IHostApplicationLifetime applicationLifetime,
             ISharedSetupRootActors setupRootActors = default,
             ISubscriptionFactory subscriptionFactory = default,
             IMainWorker mainWorker = default,
             IMetricsProvider metricsProvider = default
         )
         {
-            _logger = logger;
-            _setupRootActors = setupRootActors;
-            _clusterSettings = clusterSettings;
-            _mainWorker = mainWorker;
-            _descriptorProvider = descriptorProvider;
-            _clusterProvider = clusterProvider;
-            _subscriptionFactory = subscriptionFactory;
-            _metricsProvider = metricsProvider;
-            _cancellationTokenSource = new CancellationTokenSource();
+            this.logger = logger;
+            this.setupRootActors = setupRootActors;
+            this.clusterSettings = clusterSettings;
+            this.mainWorker = mainWorker;
+            this.descriptorProvider = descriptorProvider;
+            this.clusterProviderFactory = clusterProviderFactory;
+            this.applicationLifetime = applicationLifetime;
+            this.subscriptionFactory = subscriptionFactory;
+            this.metricsProvider = metricsProvider;
         }
         public async Task<bool> Run()
         {
-            _cluster = await CreateCluster().ConfigureAwait(false);
+            cluster = await CreateCluster().ConfigureAwait(false);
 
-            if (_mainWorker != null)
+            if (mainWorker != null)
             {
-                this._mainWorkerTask = SafeTask.Run(() => _mainWorker.Run(_cluster), _cancellationTokenSource.Token);
+                _ = SafeTask.Run(() => mainWorker.Run(cluster), this.applicationLifetime.ApplicationStopping);
             }
 
             return true;
@@ -69,130 +69,58 @@ namespace DAM2.Core.Shared
             {
                 var actorSystemConfig = ActorSystemConfig.Setup();
 
-                if (_metricsProvider != null)
+                if (metricsProvider != null)
                 {
                     actorSystemConfig = actorSystemConfig
-                        .WithMetricsProviders(_metricsProvider);
+                        .WithMetricsProviders(metricsProvider);
                 }
 
                 var system = new ActorSystem(actorSystemConfig);
-                _logger.LogInformation("Setting up Cluster");
-                _logger.LogInformation("ClusterName: " + _clusterSettings.ClusterName);
-                _logger.LogInformation("PIDDatabaseName: " + _clusterSettings.PIDDatabaseName);
-                _logger.LogInformation("PIDCollectionName: " + _clusterSettings.PIDCollectionName);
+                logger.LogInformation("Setting up Cluster");
+                logger.LogInformation("ClusterName: " + clusterSettings.ClusterName);
+                logger.LogInformation("PIDDatabaseName: " + clusterSettings.PIDDatabaseName);
+                logger.LogInformation("PIDCollectionName: " + clusterSettings.PIDCollectionName);
 
-                var clusterProvider = _clusterProvider.CreateClusterProvider(_logger);
+                var clusterProvider = this.clusterProviderFactory.CreateClusterProvider(logger);
 
-                //var identity = RedisIdentityLookup.GetIdentityLookup(_clusterSettings.ClusterName, _clusterSettings.Host, _clusterSettings.RedisPort);
-                var identity = MongoIdentityLookup.GetIdentityLookup(_clusterSettings.ClusterName, _clusterSettings.PIDConnectionString, _clusterSettings.PIDCollectionName, _clusterSettings.PIDDatabaseName);
+                var identity = MongoIdentityLookup.GetIdentityLookup(clusterSettings.ClusterName, clusterSettings.PIDConnectionString, clusterSettings.PIDCollectionName, clusterSettings.PIDDatabaseName);
 
-                var (clusterConfig, remoteConfig) = GenericClusterConfig.CreateClusterConfig(_clusterSettings, clusterProvider, identity, _descriptorProvider, _logger);
+                var (clusterConfig, remoteConfig) = GenericClusterConfig.CreateClusterConfig(clusterSettings, clusterProvider, identity, descriptorProvider, logger);
 
-                if (_setupRootActors != null)
+                if (setupRootActors != null)
                 {
-                    clusterConfig = _setupRootActors.AddRootActors(clusterConfig);
+                    clusterConfig = setupRootActors.AddRootActors(clusterConfig);
                 }
 
                 _ = new GrpcCoreRemote(system, remoteConfig);
                 
-                var cluster = new Cluster(system, clusterConfig);
+                this.cluster = new Cluster(system, clusterConfig);
 
                 await cluster.StartMemberAsync().ConfigureAwait(false);
 
-                if (this._subscriptionFactory != null)
+                if (this.subscriptionFactory != null)
                 {
-                    _logger.LogInformation("Fire up subscriptions for system {id} {address}", system.Id, system.Address);
-                    await this._subscriptionFactory.FireUp(system).ConfigureAwait(false);
+                    logger.LogInformation("Fire up subscriptions for system {id} {address}", system.Id, system.Address);
+                    await this.subscriptionFactory.FireUp(system).ConfigureAwait(false);
                 }
-
-                _ = SafeTask.Run(async () =>
-                {
-	                try
-	                {
-		                int counter = 0;
-		                while (!_cancellationTokenSource.IsCancellationRequested)
-		                {
-			                Member[] members = cluster.MemberList.GetAllMembers();
-			                string[] clusterKinds = cluster.GetClusterKinds();
-
-			                if (clusterKinds.Length == 0)
-			                {
-				                _logger.LogInformation("[SharedClusterWorker] clusterKinds {clusterKinds}", clusterKinds.Length);
-				                _logger.LogInformation("[SharedClusterWorker] Restarting");
-				                _ = this.RestartMe();
-				                break;
-			                }
-
-			                this.Connected = members.Length > 0;
-			                if (!this.Connected)
-			                {
-				                counter = 0;
-				                _logger.LogInformation("[SharedClusterWorker] Connected {Connected}", this.Connected);
-			                }
-
-			                if (this.Connected)
-			                {
-				                if (counter % 20 == 0)
-				                {
-					                _logger.LogDebug("[SharedClusterWorker] Members {@Members}", members.Select(m => m.ToLogString()));
-				                }
-				                counter++;
-			                }
-
-			                await Task.Delay(500);
-		                }
-                    }
-	                catch
-	                {
-		                // ignored
-	                }
-
-	                
-                }, _cancellationTokenSource.Token);
 
                 return cluster;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "SharedClusterWork failed");
+                logger.LogError(ex, "SharedClusterWork failed");
                 throw;
             }
         }
 
-        
-
-        public Lazy<Cluster> Cluster => new Lazy<Cluster>(() => this._cluster ?? this.CreateCluster().ConfigureAwait(false).GetAwaiter().GetResult());
+        public Lazy<Cluster> Cluster => new Lazy<Cluster>(() => this.cluster ?? this.CreateCluster().ConfigureAwait(false).GetAwaiter().GetResult());
         public async Task Shutdown()
         {
-            _cancellationTokenSource.Cancel(false);
-
-            if (this._cluster != null)
+            if (this.cluster != null)
             {
-                await this._cluster.ShutdownAsync(true).ConfigureAwait(false);
+                await this.cluster.ShutdownAsync(true).ConfigureAwait(false);
                 await Task.Delay(3000);
             }
-        }
-
-        private Task RestartMe()
-        {
-            _ = SafeTask.Run(async () =>
-            {
-                await Task.Delay(2000);
-                try{await this.Shutdown(); }
-                catch
-                {
-	                // ignored
-                }
-
-                _cluster = null;
-                await Task.Delay(5000);
-                
-                _cancellationTokenSource = new CancellationTokenSource();
-                await this.Run();
-                await Task.Delay(2000);
-            });
-
-            return Task.CompletedTask;
         }
     }
 }
