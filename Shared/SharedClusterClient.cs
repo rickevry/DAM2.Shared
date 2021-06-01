@@ -22,7 +22,10 @@ namespace DAM2.Core.Shared
 		private bool clusterReady = false;
 		private readonly ISharedClusterProviderFactory clusterProviderFactory;
 
-		public SharedClusterClient(ILogger<SharedClusterClient> logger, IDescriptorProvider descriptorProvider, IClusterSettings clusterSettings, ISharedClusterProviderFactory clusterProviderFactory)
+		public SharedClusterClient(ILogger<SharedClusterClient> logger, 
+			IDescriptorProvider descriptorProvider, 
+			IClusterSettings clusterSettings, 
+			ISharedClusterProviderFactory clusterProviderFactory)
 		{
 			this.logger = logger;
 			this.descriptorProvider = descriptorProvider;
@@ -64,7 +67,7 @@ namespace DAM2.Core.Shared
 				_ = new GrpcCoreRemote(system, remoteConfig);
 				this.cluster = new Cluster(system, clusterConfig);
 
-				await cluster.StartClientAsync().ConfigureAwait(false);
+				await cluster.StartMemberAsync().ConfigureAwait(false);
 
 				clusterReady = true;
 
