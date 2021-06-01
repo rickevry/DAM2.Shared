@@ -36,8 +36,9 @@ namespace DAM2.Shared
 	        services.AddSingleton<ISharedClusterProviderFactory, SharedClusterProviderFactory>();
 	        services.AddTransient<ITokenFactory, TokenFactory>();
 	        services.AddSingleton<ISharedClusterClient, SharedClusterClient>();
+	        services.AddHostedService<ProtoActorClientHostedService>();
 
-	        return new ProtoActorClientServices(services);
+			return new ProtoActorClientServices(services);
         }
 
         private static void ConfigureClusterSettings(IServiceCollection services, IConfiguration configuration)
