@@ -115,7 +115,7 @@ namespace DAM2.Shared
 		    return this;
 	    }
 
-	    public ProtoActorClusterServices AddProtoMetrics(params IMetricsProvider[] metricsProviders)
+	    public ProtoActorClientServices AddProtoMetrics(params IMetricsProvider[] metricsProviders)
 	    {
 		    if (metricsProviders == null)
 		    {
