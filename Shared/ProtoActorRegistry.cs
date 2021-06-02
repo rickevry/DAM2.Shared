@@ -114,5 +114,19 @@ namespace DAM2.Shared
 		    services.AddTransient<IDescriptorProvider, TProvider>();
 		    return this;
 	    }
-    }
+
+	    public ProtoActorClusterServices AddProtoMetrics(params IMetricsProvider[] metricsProviders)
+	    {
+		    if (metricsProviders == null)
+		    {
+			    return this;
+		    }
+		    foreach (IMetricsProvider metricsProvider in metricsProviders)
+		    {
+			    services.AddSingleton<IMetricsProvider>(metricsProvider);
+		    }
+
+		    return this;
+	    }
+	}
 }
