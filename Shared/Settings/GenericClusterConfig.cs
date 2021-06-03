@@ -47,7 +47,7 @@ namespace DAM2.Core.Shared.Settings
 
 
             GrpcCoreRemoteConfig remoteConfig = GrpcCoreRemoteConfig.BindTo(host,port)
-	            .WithEndpointWriterMaxRetries(0)
+	            .WithEndpointWriterMaxRetries(3)
 	            .WithAdvertisedHost(advertisedHost)
 	            .WithProtoMessages(descriptors)
                 .WithChannelOptions(options);

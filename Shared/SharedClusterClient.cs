@@ -19,8 +19,9 @@ namespace DAM2.Core.Shared
 		private readonly IDescriptorProvider descriptorProvider;
 		private readonly IClusterSettings clusterSettings;
 		private Cluster cluster;
-		private bool clusterReady = false;
+		private bool clusterReady;
 		private readonly ISharedClusterProviderFactory clusterProviderFactory;
+		private readonly Dictionary<string, int> retries = new();
 
 		public SharedClusterClient(ILogger<SharedClusterClient> logger, 
 			IDescriptorProvider descriptorProvider, 
@@ -44,7 +45,7 @@ namespace DAM2.Core.Shared
 			if (this.cluster != null)
 			{
 				await this.cluster.ShutdownAsync(true).ConfigureAwait(false);
-				await Task.Delay(1000);
+				await Task.Delay(3000);
 			}
 		}
 
@@ -67,7 +68,7 @@ namespace DAM2.Core.Shared
 				_ = new GrpcCoreRemote(system, remoteConfig);
 				this.cluster = new Cluster(system, clusterConfig);
 
-				await cluster.StartMemberAsync().ConfigureAwait(false);
+				await cluster.StartClientAsync().ConfigureAwait(false);
 
 				clusterReady = true;
 
@@ -86,6 +87,7 @@ namespace DAM2.Core.Shared
 
 		public async Task<T> RequestAsync<T>(string actorPath, string clusterKind, object cmd)
 		{
+			string key = $"{actorPath}_{clusterKind}";
 			int counter = 0;
 			while (!clusterReady && counter < 40)
 			{
@@ -98,6 +100,14 @@ namespace DAM2.Core.Shared
 				var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 				var res = await cluster.RequestAsync<T>(actorPath, clusterKind, cmd, tokenSource.Token).ConfigureAwait(false);
 
+				if (tokenSource.Token.IsCancellationRequested && clusterReady)
+				{
+					clusterReady = false;
+					await RestartMe();
+					return await Retry<T>(actorPath, clusterKind, cmd, key);
+				}
+				retries.Remove(key);
+
 				return res;
 			}
 			catch (Exception x)
@@ -105,6 +115,41 @@ namespace DAM2.Core.Shared
 				logger.LogError(x, "Failed Request {Id}", actorPath);
 				return default(T);
 			}
+		}
+
+		private async Task<T> Retry<T>(string actorPath, string clusterKind, object cmd, string key)
+		{
+			if (retries.TryGetValue(key, out int value))
+			{
+				Interlocked.Increment(ref value);
+			}
+			else
+			{
+				retries.Add(key, 1);
+			}
+
+			if (value > 5)
+			{
+				this.logger.LogError("Request timeout for {Id}", actorPath);
+				return default(T);
+			}
+
+			this.logger.LogInformation("[{Client}] Retry request...", nameof(SharedClusterClient));
+			await Task.Delay(value * 200);
+			return await RequestAsync<T>(actorPath, clusterKind, cmd);
+		}
+
+		private async Task RestartMe()
+		{
+			this.logger.LogWarning("[{Client}] Restarting", nameof(SharedClusterClient));
+			try { await this.Shutdown(); }
+			catch
+			{
+				// ignored
+			}
+			await Task.Delay(3000);
+			this.cluster = null;
+			await this.CreateCluster();
 		}
 	}
 }
