@@ -159,6 +159,7 @@ namespace DAM2.Core.Shared
 						if (counter % 20 == 0)
 						{
 							logger.LogDebug("[SharedClusterWorker] Members {@Members}", members.Select(m => m.ToLogString()));
+							counter = 0;
 						}
 						counter++;
 					}

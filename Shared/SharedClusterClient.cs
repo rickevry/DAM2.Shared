@@ -23,6 +23,8 @@ namespace DAM2.Core.Shared
 		private readonly ISharedClusterProviderFactory clusterProviderFactory;
 		private readonly Dictionary<string, int> retries = new();
 
+		private static object lockObject = new();
+
 		public SharedClusterClient(ILogger<SharedClusterClient> logger, 
 			IDescriptorProvider descriptorProvider, 
 			IClusterSettings clusterSettings, 
@@ -106,6 +108,7 @@ namespace DAM2.Core.Shared
 					await RestartMe();
 					return await Retry<T>(actorPath, clusterKind, cmd, key);
 				}
+
 				retries.Remove(key);
 
 				return res;
