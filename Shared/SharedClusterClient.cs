@@ -109,6 +109,11 @@ namespace DAM2.Core.Shared
 					return await Retry<T>(actorPath, clusterKind, cmd, key);
 				}
 
+				if (!clusterReady)
+				{
+					return await Retry<T>(actorPath, clusterKind, cmd, key);
+				}
+
 				retries.Remove(key);
 
 				return res;
