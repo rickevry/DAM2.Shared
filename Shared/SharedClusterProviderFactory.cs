@@ -45,7 +45,7 @@ namespace DAM2.Core.Shared
         {
             var kubernetes = new Kubernetes(KubernetesClientConfiguration.InClusterConfig());
             logger.LogDebug("Running with Kubernetes Provider", kubernetes.BaseUri);
-            return new KubernetesProvider(kubernetes);
+            return new KubernetesProvider(kubernetes, new KubernetesProviderConfig(10, true));
         }
     }
 }
