@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Proto;
@@ -9,8 +8,6 @@ using Proto.Remote.GrpcCore;
 using DAM2.Core.Shared.Interface;
 using DAM2.Core.Shared.Settings;
 using DAM2.Core.Shared.Subscriptions;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Extensions.Hosting;
 using Ubiquitous.Metrics;
 
