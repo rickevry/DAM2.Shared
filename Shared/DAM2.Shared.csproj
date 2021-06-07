@@ -42,7 +42,7 @@
     <PackageReference Include="Proto.Actor" Version="0.18.1-alpha.0.13" />
     <PackageReference Include="Proto.Cluster" Version="0.18.1-alpha.0.13" />
     <PackageReference Include="Proto.Cluster.Consul" Version="0.18.1-alpha.0.13" />
-    <PackageReference Include="Proto.Cluster.Identity.MongoDb" Version="0.18.1-alpha.0.1" />
+    <PackageReference Include="Proto.Cluster.Identity.MongoDb" Version="0.18.1-alpha.0.13" />
     <PackageReference Include="Proto.Cluster.Identity.Redis" Version="0.18.1-alpha.0.13" />
     <PackageReference Include="Proto.Cluster.Kubernetes" Version="0.18.1-alpha.0.13" />
     <PackageReference Include="Proto.Remote.GrpcCore" Version="0.18.1-alpha.0.13" />
