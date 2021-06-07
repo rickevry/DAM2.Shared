@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DAM2.Core.Shared;
 using DAM2.Core.Shared.Interface;
 using DAM2.Core.Shared.Settings;
+using DAM2.Shared.Settings;
 using DAM2.Shared.Shared;
 using DAM2.Shared.Shared.Interface;
 using Microsoft.Extensions.Configuration;
@@ -20,7 +21,26 @@ namespace DAM2.Shared
     {
         public static ProtoActorClusterServices AddProtoCluster(this IServiceCollection services, IConfiguration configuration)
 		{
+			services.AddOptions();
 			ConfigureClusterSettings(services, configuration);
+
+			if (configuration.GetChildren().Any(s => s.Key.Equals(SharedClusterWorkerOptions.Key)))
+			{
+				services.Configure<SharedClusterWorkerOptions>(configuration.GetSection(SharedClusterWorkerOptions.Key));
+			}
+			else
+			{
+				services.Configure<SharedClusterWorkerOptions>(_ => {});
+			}
+
+			if (configuration.GetChildren().Any(s => s.Key.Equals(KubernetesClusterOptions.Key)))
+			{
+				services.Configure<KubernetesClusterOptions>(configuration.GetSection(KubernetesClusterOptions.Key));
+			}
+			else
+			{
+				services.Configure<KubernetesClusterOptions>(_ => { });
+			}
 
 			services.AddSingleton<ISharedClusterProviderFactory, SharedClusterProviderFactory>();
 			services.AddTransient<ITokenFactory, TokenFactory>();
@@ -32,8 +52,29 @@ namespace DAM2.Shared
 
         public static ProtoActorClientServices AddProtoClient(this IServiceCollection services, IConfiguration configuration)
         {
-	        ConfigureClusterSettings(services, configuration);
-	        services.AddSingleton<ISharedClusterProviderFactory, SharedClusterProviderFactory>();
+	        services.AddOptions();
+			ConfigureClusterSettings(services, configuration);
+
+			if (configuration.GetChildren().Any(s => s.Key.Equals(SharedClusterWorkerOptions.Key)))
+			{
+				services.Configure<SharedClusterWorkerOptions>(configuration.GetSection(SharedClusterWorkerOptions.Key));
+			}
+			else
+			{
+				services.Configure<SharedClusterWorkerOptions>(_ => { });
+			}
+
+			if (configuration.GetChildren().Any(s => s.Key.Equals(KubernetesClusterOptions.Key)))
+			{
+				services.Configure<KubernetesClusterOptions>(configuration.GetSection(KubernetesClusterOptions.Key));
+			}
+			else
+			{
+				services.Configure<KubernetesClusterOptions>(_ => { });
+			}
+
+
+			services.AddSingleton<ISharedClusterProviderFactory, SharedClusterProviderFactory>();
 	        services.AddTransient<ITokenFactory, TokenFactory>();
 	        services.AddSingleton<ISharedClusterClient, SharedClusterClient>();
 	        services.AddHostedService<ProtoActorClientHostedService>();

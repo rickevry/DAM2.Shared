@@ -6,6 +6,9 @@ using Proto.Cluster;
 using Proto.Cluster.Consul;
 using Proto.Cluster.Kubernetes;
 using System;
+using System.Runtime.CompilerServices;
+using DAM2.Shared.Settings;
+using Microsoft.Extensions.Options;
 
 namespace DAM2.Core.Shared
 {
@@ -13,10 +16,12 @@ namespace DAM2.Core.Shared
     {
 
         private readonly IClusterSettings _clusterSettings = null;
-        
-        public SharedClusterProviderFactory(IClusterSettings clusterSettings)
+        private KubernetesClusterOptions _kubernetesClusterOptions;
+
+        public SharedClusterProviderFactory(IClusterSettings clusterSettings, IOptions<KubernetesClusterOptions> kubernetesClusterOptionAccessor)
         {
             _clusterSettings = clusterSettings;
+            _kubernetesClusterOptions = kubernetesClusterOptionAccessor.Value;
         }
 
         public IClusterProvider CreateClusterProvider(ILogger logger)
@@ -41,11 +46,16 @@ namespace DAM2.Core.Shared
             return new ConsulProvider(new ConsulProviderConfig(), c => { c.Address = new Uri(_clusterSettings.ConsulUri); });
         }
 
-        private static IClusterProvider UseKubernetes(ILogger logger)
+        private IClusterProvider UseKubernetes(ILogger logger)
         {
             var kubernetes = new Kubernetes(KubernetesClientConfiguration.InClusterConfig());
             logger.LogDebug("Running with Kubernetes Provider", kubernetes.BaseUri);
-            return new KubernetesProvider(kubernetes, new KubernetesProviderConfig(10, true));
+            KubernetesProviderConfig config = new();
+            if (_kubernetesClusterOptions != null)
+            {
+	            config = new KubernetesProviderConfig(_kubernetesClusterOptions.WatchTimeoutSeconds, _kubernetesClusterOptions.DeveloperLogging);
+            }
+            return new KubernetesProvider(kubernetes, config);
         }
     }
 }
