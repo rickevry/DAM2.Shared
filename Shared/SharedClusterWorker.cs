@@ -9,10 +9,16 @@ using DAM2.Core.Shared.Interface;
 using DAM2.Core.Shared.Settings;
 using DAM2.Core.Shared.Subscriptions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Ubiquitous.Metrics;
 
 namespace DAM2.Core.Shared
 {
+	public class SharedClusterWorkerOptions
+	{
+		public const string Key = "ProtoCluster";
+		public bool RestartOnFail { get; set; }
+	}
 	public class SharedClusterWorker : ISharedClusterWorker
 	{
 
@@ -26,7 +32,8 @@ namespace DAM2.Core.Shared
 		private readonly ISubscriptionFactory subscriptionFactory;
 		private readonly IMetricsProvider metricsProvider;
 		private Cluster cluster;
-		
+		private SharedClusterWorkerOptions clusterOptions;
+
 
 		public SharedClusterWorker(
 			ILogger<SharedClusterWorker> logger,
@@ -34,6 +41,7 @@ namespace DAM2.Core.Shared
 			IDescriptorProvider descriptorProvider,
 			ISharedClusterProviderFactory clusterProviderFactory,
 			IHostApplicationLifetime applicationLifetime,
+			IOptions<SharedClusterWorkerOptions> clusterOptionsAccessor,
 			ISharedSetupRootActors setupRootActors = default,
 			ISubscriptionFactory subscriptionFactory = default,
 			IMainWorker mainWorker = default,
@@ -49,6 +57,7 @@ namespace DAM2.Core.Shared
 			this.applicationLifetime = applicationLifetime;
 			this.subscriptionFactory = subscriptionFactory;
 			this.metricsProvider = metricsProvider;
+			this.clusterOptions = clusterOptionsAccessor.Value;
 		}
 		public async Task<bool> Run()
 		{
@@ -140,8 +149,12 @@ namespace DAM2.Core.Shared
 					{
 						this.logger.LogWarning("[SharedClusterWorker] clusterKinds {clusterKinds}", clusterKinds.Length);
 						this.logger.LogWarning("[SharedClusterWorker] Restarting");
-						_ = this.RestartMe();
-						break;
+						if (this.clusterOptions.RestartOnFail)
+						{
+							_ = this.RestartMe();
+							break;
+						}
+						
 					}
 
 					this.Connected = members.Length > 0;

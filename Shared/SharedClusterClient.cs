@@ -10,9 +10,16 @@ using DAM2.Core.Shared.Settings;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Options;
 
 namespace DAM2.Core.Shared
 {
+	public class SharedClusterClientOptions
+	{
+		public const string Key = "ProtoClusterClient";
+		public bool RestartOnFail { get; set; }
+	}
+
 	public class SharedClusterClient : ISharedClusterClient
 	{
 		private readonly ILogger<SharedClusterClient> logger;
@@ -23,17 +30,19 @@ namespace DAM2.Core.Shared
 		private readonly ISharedClusterProviderFactory clusterProviderFactory;
 		private readonly Dictionary<string, int> retries = new();
 
-		private static object lockObject = new();
+		private SharedClusterClientOptions clientOptions;
 
 		public SharedClusterClient(ILogger<SharedClusterClient> logger, 
 			IDescriptorProvider descriptorProvider, 
 			IClusterSettings clusterSettings, 
-			ISharedClusterProviderFactory clusterProviderFactory)
+			ISharedClusterProviderFactory clusterProviderFactory,
+			IOptions<SharedClusterClientOptions> clientOptionsAccessor)
 		{
 			this.logger = logger;
 			this.descriptorProvider = descriptorProvider;
 			this.clusterSettings = clusterSettings;
 			this.clusterProviderFactory = clusterProviderFactory;
+			this.clientOptions = clientOptionsAccessor.Value;
 		}
 
 
@@ -102,14 +111,14 @@ namespace DAM2.Core.Shared
 				var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 				var res = await cluster.RequestAsync<T>(actorPath, clusterKind, cmd, tokenSource.Token).ConfigureAwait(false);
 
-				if (tokenSource.Token.IsCancellationRequested && clusterReady)
+				if (tokenSource.Token.IsCancellationRequested && clusterReady && this.clientOptions.RestartOnFail)
 				{
 					clusterReady = false;
 					await RestartMe();
 					return await Retry<T>(actorPath, clusterKind, cmd, key);
 				}
 
-				if (!clusterReady)
+				if (!clusterReady && this.clientOptions.RestartOnFail)
 				{
 					return await Retry<T>(actorPath, clusterKind, cmd, key);
 				}
