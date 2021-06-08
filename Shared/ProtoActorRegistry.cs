@@ -55,9 +55,9 @@ namespace DAM2.Shared
 	        services.AddOptions();
 			ConfigureClusterSettings(services, configuration);
 
-			if (configuration.GetChildren().Any(s => s.Key.Equals(SharedClusterWorkerOptions.Key)))
+			if (configuration.GetChildren().Any(s => s.Key.Equals(SharedClusterClientOptions.Key)))
 			{
-				services.Configure<SharedClusterWorkerOptions>(configuration.GetSection(SharedClusterWorkerOptions.Key));
+				services.Configure<SharedClusterClientOptions>(configuration.GetSection(SharedClusterClientOptions.Key));
 			}
 			else
 			{

@@ -72,7 +72,10 @@ namespace DAM2.Core.Shared
 				var system = new ActorSystem();
 				var clusterProvider = this.clusterProviderFactory.CreateClusterProvider(logger);
 
-				var identity = MongoIdentityLookup.GetIdentityLookup(clusterSettings.ClusterName, clusterSettings.PIDConnectionString, clusterSettings.PIDCollectionName, clusterSettings.PIDDatabaseName);
+				var identity = MongoIdentityLookup.GetIdentityLookup(clusterSettings.ClusterName, 
+					clusterSettings.PIDConnectionString, 
+					clusterSettings.PIDCollectionName, 
+					clusterSettings.PIDDatabaseName);
 
 				var (clusterConfig, remoteConfig) = GenericClusterConfig.CreateClusterConfig(clusterSettings, clusterProvider, identity, descriptorProvider, logger);
 
@@ -90,7 +93,7 @@ namespace DAM2.Core.Shared
 			catch (Exception ex)
 			{
 				logger.LogError(ex, "SharedClusterClient failed");
-				return null;
+				throw;
 			}
 		}
 
@@ -164,7 +167,6 @@ namespace DAM2.Core.Shared
 			{
 				// ignored
 			}
-			await Task.Delay(3000);
 			this.cluster = null;
 			await this.CreateCluster();
 		}
