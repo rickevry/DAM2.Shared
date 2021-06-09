@@ -2,30 +2,13 @@
 using DAM2.Core.Shared.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Proto.Cluster;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Ubiquitous.Metrics;
 
-namespace DAM2.Shared.Shared.ProtoActorRuntime
+namespace DAM2.Shared.ProtoActorRuntime
 {
     public static class ProtoActorHostExtensions
     {
-        public static IProtoActorBuilder ConfigureDefaults(this IProtoActorBuilder builder)
-        {
-            return builder.ConfigureServices((context, services) =>
-            {
-                if (!context.Properties.ContainsKey("ClusterServicesAdded"))
-                {
-                    DefaultClusterServices.AddDefaultServices(services);
-                    context.Properties.Add("ClusterServicesAdded", true);
-                }
-            });
-        }
-
         public static IProtoActorBuilder UseClusterSettings(this IProtoActorBuilder builder, Action<ClusterSettings> configureOptions)
         {
             return builder.ConfigureServices((context, services) =>

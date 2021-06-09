@@ -2,21 +2,21 @@
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace DAM2.Shared.Shared.ProtoActorRuntime
+namespace DAM2.Shared.ProtoActorRuntime
 {
     public interface IProtoActorBuilder
     {
-        IProtoActorBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate);
+        IProtoActorBuilder ConfigureServices(Action<Microsoft.Extensions.Hosting.HostBuilderContext, IServiceCollection> configureDelegate);
+        IDictionary<object, object> Properties { get; }
     }
     internal class ProtoActorBuilder : IProtoActorBuilder
     {
         private readonly IHostBuilder hostBuilder;
-        private readonly List<Action<HostBuilderContext, IProtoActorBuilder>> configureClusterDelegates = new List<Action<HostBuilderContext, IProtoActorBuilder>>();
-        private readonly List<Action<HostBuilderContext, IServiceCollection>> configureServicesDelegates = new List<Action<HostBuilderContext, IServiceCollection>>();
+        private readonly List<Action<Microsoft.Extensions.Hosting.HostBuilderContext, IProtoActorBuilder>> configureClusterDelegates = new List<Action<Microsoft.Extensions.Hosting.HostBuilderContext, IProtoActorBuilder>>();
+        private readonly List<Action<Microsoft.Extensions.Hosting.HostBuilderContext, IServiceCollection>> configureServicesDelegates = new List<Action<Microsoft.Extensions.Hosting.HostBuilderContext, IServiceCollection>>();
+
+        public IDictionary<object, object> Properties => this.hostBuilder.Properties;
 
         public ProtoActorBuilder(IHostBuilder hostBuilder)
         {
@@ -46,12 +46,14 @@ namespace DAM2.Shared.Shared.ProtoActorRuntime
             return this;
         }
 
-        public IProtoActorBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
+        public IProtoActorBuilder ConfigureServices(Action<Microsoft.Extensions.Hosting.HostBuilderContext, IServiceCollection> configureDelegate)
         {
             if (configureDelegate == null) throw new ArgumentNullException(nameof(configureDelegate));
             this.configureServicesDelegates.Add(configureDelegate);
             return this;
         }
+
+        
     }
 
     
