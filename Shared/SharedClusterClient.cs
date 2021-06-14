@@ -169,6 +169,7 @@ namespace DAM2.Core.Shared
 			}
 			this.cluster = null;
 			await this.CreateCluster();
+			await Task.Delay(3000);
 		}
 	}
 }
