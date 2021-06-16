@@ -62,7 +62,11 @@ namespace DAM2.Core.Actors.Shared.Utils
             string key = path[0];
             if (path.Length == 1)
             {
-                if (value is JArray)
+                if (value == null)
+                {
+                    jobject[key] = null;
+                }
+                else if (value is JArray)
                 {
                     jobject[key] = (JArray)value;
                 }
