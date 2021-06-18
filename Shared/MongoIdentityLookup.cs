@@ -1,6 +1,7 @@
-﻿using MongoDB.Driver;
+﻿using DAM2.Shared.ProtoActorIdentity.Mongo;
+using MongoDB.Driver;
 using Proto.Cluster.Identity;
-using Proto.Cluster.Identity.MongoDb;
+
 
 namespace DAM2.Core.Shared
 {

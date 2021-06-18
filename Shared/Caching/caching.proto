@@ -1,0 +1,7 @@
+﻿syntax = "proto3";
+package protoactor.extensions;
+option csharp_namespace = "DAM2.Shared.Caching";
+
+message CacheItem{
+	bytes Value=1;
+}
