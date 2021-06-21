@@ -10,6 +10,7 @@ using DAM2.Core.Shared.Settings;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Principal;
 using Microsoft.Extensions.Options;
 
 namespace DAM2.Core.Shared
@@ -99,7 +100,7 @@ namespace DAM2.Core.Shared
 
 		public Cluster Cluster => cluster;
 
-		public async Task<T> RequestAsync<T>(string actorPath, string clusterKind, object cmd)
+		public async Task<T> RequestAsync<T>(string actorPath, string clusterKind, object cmd, CancellationToken token = default)
 		{
 			string key = $"{actorPath}_{clusterKind}";
 			int counter = 0;
@@ -111,10 +112,15 @@ namespace DAM2.Core.Shared
 
 			try
 			{
-				var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-				var res = await cluster.RequestAsync<T>(actorPath, clusterKind, cmd, tokenSource.Token).ConfigureAwait(false);
+				if (token == default)
+				{
+					var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+					token = tokenSource.Token;
+				}
+				
+				var res = await cluster.RequestAsync<T>(actorPath, clusterKind, cmd, token).ConfigureAwait(false);
 
-				if (tokenSource.Token.IsCancellationRequested && clusterReady && this.clientOptions.RestartOnFail)
+				if (token.IsCancellationRequested && clusterReady && this.clientOptions.RestartOnFail)
 				{
 					clusterReady = false;
 					await RestartMe();
