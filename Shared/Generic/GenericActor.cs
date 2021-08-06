@@ -98,16 +98,15 @@ namespace DAM2.Core.Shared.Generic
         {
             this.pidValues = context.Self.ExtractIdValues();
 
-            _logger.LogInformation($"GenericActor - Started");
+            _logger?.LogInformation("{ActorName} - Started. Eid {Eid}", GetType().Name, pidValues.Eid);
             return Task.CompletedTask;
         }
 
         protected Task GarbageCollect(IContext context, GarbageCollectCmd cmd)
         {
-            _logger.LogInformation("It is time to Garbage Collect");
+            _logger?.LogInformation("It is time to Garbage Collect");
             return Task.CompletedTask;
         }
-
 
         protected bool GetParams(IContext context, out string p1)
         {
