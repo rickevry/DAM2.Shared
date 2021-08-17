@@ -20,6 +20,7 @@ namespace DAM2.Shared.Insights
             public String uid { get; set; }
             public string pid { get; set; }
             public string cid { get; set; }
+            public string level { get; set; }
             public JObject props { get; set; }
 
         }
@@ -40,6 +41,7 @@ namespace DAM2.Shared.Insights
                 jdata["msg"] = e.msg;
                 jdata["pid"] = e.pid;
                 jdata["cid"] = e.cid;
+                jdata["level"] = e.level;
                 jdata["uid"] = e.uid;
                 if (!e.created.HasValue)
                 {
