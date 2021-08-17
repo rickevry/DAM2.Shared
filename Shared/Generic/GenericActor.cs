@@ -13,7 +13,7 @@ namespace DAM2.Core.Shared.Generic
 
         protected PIDValues pidValues;
         protected Props _childFactory = null;
-        private Dictionary<string, PID> _actors = null;
+        private readonly Dictionary<string, PID> _actors;
         public GenericActor(ILogger logger = default)
         {
             _logger = logger;

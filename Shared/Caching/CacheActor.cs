@@ -21,9 +21,10 @@ namespace DAM2.Shared.Caching
 	    public Task ReceiveAsync(IContext context)
 	    {
 		    Task task = context.Message switch
-		    {
-			    Started _ => Started(context)
-		    };
+            {
+                Started _ => Started(context),
+                _ => Task.CompletedTask
+            };
 
 		    return task;
 	    }
@@ -35,7 +36,7 @@ namespace DAM2.Shared.Caching
 			    this.key = context.Self.Id;
 			    this.item = await this.storageProvider.Get(key);
 		    }
-		    catch (Exception e)
+		    catch
 		    {
 			    
 		    }
