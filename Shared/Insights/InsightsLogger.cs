@@ -21,6 +21,8 @@ namespace DAM2.Shared.Insights
             public string pid { get; set; }
             public string cid { get; set; }
             public string level { get; set; }
+            public string operation { get; set; }
+            public string source { get; set; }
             public JObject props { get; set; }
 
         }
@@ -43,6 +45,8 @@ namespace DAM2.Shared.Insights
                 jdata["cid"] = e.cid;
                 jdata["level"] = e.level;
                 jdata["uid"] = e.uid;
+                jdata["op"] = e.operation;
+                jdata["source"] = e.source ?? "SMH";
                 if (!e.created.HasValue)
                 {
                     e.created = DateTime.UtcNow;
