@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,8 @@ namespace DAM2.Shared.Insights
             public string name { get; set; }
             public string tenant { get; set; }
             public string msg { get; set; }
+            public DateTime? created { get; set; }
+            public String uid { get; set; }
             public string pid { get; set; }
             public string cid { get; set; }
             public JObject props { get; set; }
@@ -23,6 +26,7 @@ namespace DAM2.Shared.Insights
 
         static string url = "https://daminsights1.azurewebsites.net/api/post";
         static readonly HttpClient _client = new HttpClient();
+        static CultureInfo culture = CultureInfo.InvariantCulture;
 
         public static void Post(InsightsEvent e)
         {
@@ -36,6 +40,13 @@ namespace DAM2.Shared.Insights
                 jdata["msg"] = e.msg;
                 jdata["pid"] = e.pid;
                 jdata["cid"] = e.cid;
+                jdata["uid"] = e.uid;
+                if (!e.created.HasValue)
+                {
+                    e.created = DateTime.UtcNow;
+                }
+                jdata["created"] = e.created.Value.ToString("o", culture);
+
                 jdata["token"] = "VgHxbcrrLAyPoksuJ3Nykifp";
                 if (e.props != null)
                 {
