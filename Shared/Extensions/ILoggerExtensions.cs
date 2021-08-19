@@ -47,9 +47,9 @@ namespace DAM2.Shared.Extensions
             ExecutedOperation operation,
             LogLevel logLevel,
             string methodName,
-            string requestId)
+            string correlationId)
         {
-            LogMethodExecution(logger, operation, logLevel, methodName, requestId, null, null);
+            LogMethodExecution(logger, operation, logLevel, methodName, correlationId, null, null);
         }
 
         public static void LogMethodExecution<T>(
@@ -57,7 +57,7 @@ namespace DAM2.Shared.Extensions
             ExecutedOperation operation,
             LogLevel logLevel,
             string methodName,
-            string requestId,
+            string correlationId,
             string extraMessageTemplate,
             params object[] messageArgs)
         {
@@ -67,7 +67,7 @@ namespace DAM2.Shared.Extensions
                 logLevel,
                 ex: null,
                 methodName,
-                requestId,
+                correlationId,
                 extraMessageTemplate,
                 messageArgs);
         }
@@ -78,9 +78,9 @@ namespace DAM2.Shared.Extensions
             LogLevel logLevel,
             Exception ex,
             string methodName,
-            string requestId)
+            string correlationId)
         {
-            LogMethodExecution(logger, operation, logLevel, ex, methodName, requestId, null, null);
+            LogMethodExecution(logger, operation, logLevel, ex, methodName, correlationId, null, null);
         }
 
         public static void LogMethodExecution<T>(
@@ -89,7 +89,7 @@ namespace DAM2.Shared.Extensions
             LogLevel logLevel,
             Exception ex,
             string methodName,
-            string requestId,
+            string correlationId,
             string extraMessageTemplate,
             params object[] messageArgs)
         {
@@ -99,11 +99,11 @@ namespace DAM2.Shared.Extensions
                     messageArgs,
                     operation,
                     GetFullMethodName(typeof(T), methodName),
-                    requestId);
+                    correlationId);
                 logger.Log(
                     logLevel,
                     ex,
-                    "{Operation} method {FullMethodName}, RequestId: {RequestId}. " + extraMessageTemplate,
+                    "{Operation} method {FullMethodName}, CorrelationId: {CorrelationId}. " + extraMessageTemplate,
                     args);
             }
             else
@@ -111,36 +111,33 @@ namespace DAM2.Shared.Extensions
                 logger.Log(
                     logLevel,
                     ex,
-                    "{Operation} method {FullMethodName}, RequestId: {RequestId}. ",
+                    "{Operation} method {FullMethodName}, CorrelationId: {CorrelationId}. ",
                     operation,
                     GetFullMethodName(typeof(T), methodName),
-                    requestId);
+                    correlationId);
             }
         }
 
         public static void LogMethodExecution<T>(
             this ILogger<T> logger,
-            ExecutedOperation operation,
             InsightsEvent @event,
             string methodName)
         {
-            LogMethodExecution(logger, operation, @event, null, methodName, null, null);
+            LogMethodExecution(logger, @event, null, methodName, null, null);
         }
 
         public static void LogMethodExecution<T>(
             this ILogger<T> logger,
-            ExecutedOperation operation,
             InsightsEvent @event,
             string methodName,
             string extraMessageTemplate,
             params object[] messageArgs)
         {
-            LogMethodExecution(logger, operation, @event, null, methodName, extraMessageTemplate, messageArgs);
+            LogMethodExecution(logger, @event, null, methodName, extraMessageTemplate, messageArgs);
         }
 
         public static void LogMethodExecution<T>(
             this ILogger<T> logger,
-            ExecutedOperation operation,
             InsightsEvent @event,
             Exception ex,
             string methodName,
@@ -151,7 +148,7 @@ namespace DAM2.Shared.Extensions
             {
                 var args = MergeArgs(
                     messageArgs,
-                    operation,
+                    @event.operation,
                     GetFullMethodName(typeof(T),
                     methodName),
                     @event.cid);
@@ -160,7 +157,7 @@ namespace DAM2.Shared.Extensions
                     logger,
                     @event,
                     ex,
-                    "{Operation} method {FullMethodName}, RequestId: {RequestId}. " + extraMessageTemplate,
+                    "{Operation} method {FullMethodName}, CorrelationId: {CorrelationId}. " + extraMessageTemplate,
                     args);
             }
             else
@@ -169,8 +166,8 @@ namespace DAM2.Shared.Extensions
                     logger,
                     @event,
                     ex,
-                    "{Operation} method {FullMethodName}, RequestId: {RequestId}. ",
-                    operation,
+                    "{Operation} method {FullMethodName}, CorrelationId: {CorrelationId}. ",
+                    @event.operation,
                     GetFullMethodName(typeof(T), methodName),
                     @event.cid);
             }
