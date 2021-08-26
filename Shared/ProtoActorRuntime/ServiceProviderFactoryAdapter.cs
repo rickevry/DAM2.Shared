@@ -28,7 +28,7 @@ namespace DAM2.Shared.ProtoActorRuntime
     internal class ServiceProviderFactoryAdapter<TContainerBuilder> : IServiceProviderFactoryAdapter
     {
         private readonly IServiceProviderFactory<TContainerBuilder> serviceProviderFactory;
-        private readonly List<Action<HostBuilderContext, TContainerBuilder>> configureContainerDelegates = new List<Action<HostBuilderContext, TContainerBuilder>>();
+        private readonly List<Action<HostBuilderContext, TContainerBuilder>> configureContainerDelegates = new();
 
         public ServiceProviderFactoryAdapter(IServiceProviderFactory<TContainerBuilder> serviceProviderFactory)
         {
@@ -52,10 +52,10 @@ namespace DAM2.Shared.ProtoActorRuntime
         public void ConfigureContainer<TBuilder>(Action<HostBuilderContext, TBuilder> configureContainer)
         {
             if (configureContainer == null) throw new ArgumentNullException(nameof(configureContainer));
-            var typedDelegate = configureContainer as Action<HostBuilderContext, TContainerBuilder>;
-            if (typedDelegate == null)
+            if (configureContainer is not Action<HostBuilderContext, TContainerBuilder> typedDelegate)
             {
-                var msg = $"Type of configuration delegate requires builder of type {typeof(TBuilder)} which does not match previously configured container builder type {typeof(TContainerBuilder)}.";
+                var msg = $"Type of configuration delegate requires builder of type {typeof(TBuilder)} " +
+                    $"which does not match previously configured container builder type {typeof(TContainerBuilder)}.";
                 throw new InvalidCastException(msg);
             }
 

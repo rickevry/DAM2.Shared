@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿#nullable enable
+using System.Text.RegularExpressions;
 using Proto;
 
 
@@ -6,11 +7,11 @@ namespace DAM2.Core.Shared.Generic
 {
 	public class PIDValues
 	{
-		public static readonly PIDValues Empty = new PIDValues();
+		public static readonly PIDValues Empty = new();
 
-		public string Tenant { get; set; }
-		public string Name { get; set; }
-		public string Eid { get; set; }
+        public string Tenant { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Eid { get; set; } = "";
 
 		public bool Success => this != Empty;
 
@@ -20,7 +21,7 @@ namespace DAM2.Core.Shared.Generic
     public static class PIDExtensions
     {
 		
-	    private static readonly Regex PidValuesRegex = new Regex(@"\/(?<Name>.*)\/(?<Tenant>.*)\/(?<Eid>.*)\$.*", RegexOptions.Compiled);
+	    private static readonly Regex PidValuesRegex = new(@"\/(?<Name>.*)\/(?<Tenant>.*)\/(?<Eid>.*)\$.*", RegexOptions.Compiled);
         public static PIDValues ExtractIdValues(this PID? pid)
 		{
 			if (pid == null || string.IsNullOrWhiteSpace(pid.Id))

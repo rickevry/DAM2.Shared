@@ -2,9 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using Proto.Cluster;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,36 +9,34 @@ namespace DAM2.Shared.ProtoActorRuntime
 {
     public interface IProtoActorHost : IDisposable, IAsyncDisposable
     {
-        Task StartAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task StartAsync(CancellationToken cancellationToken = default);
 
-        Task StopAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task StopAsync(CancellationToken cancellationToken = default);
 
         IServiceProvider Services { get; }
-
-        
     }
+
     public class ProtoActorHost : IProtoActorHost
     {
         private readonly Cluster cluster;
-        private ProtoClusterApplicationLifetime applicationLifetime;
+        private readonly ProtoClusterApplicationLifetime applicationLifetime;
         private bool isDisposing;
 
         public ProtoActorHost(Cluster cluster, IServiceProvider services)
         {
             this.cluster = cluster;
             Services = services;
-            
 
             this.applicationLifetime = services.GetService<IHostApplicationLifetime>() as ProtoClusterApplicationLifetime;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             await this.cluster.StartMemberAsync().ConfigureAwait(false);
             this.applicationLifetime?.NotifyStarted();
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task StopAsync(CancellationToken cancellationToken = default)
         {
             try
             {

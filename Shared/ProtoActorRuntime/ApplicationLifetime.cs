@@ -1,19 +1,15 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace DAM2.Shared.ProtoActorRuntime
 {
     internal abstract class ApplicationLifetime : IHostApplicationLifetime
     {
-        private readonly CancellationTokenSource startedSource = new CancellationTokenSource();
-        private readonly CancellationTokenSource stoppingSource = new CancellationTokenSource();
-        private readonly CancellationTokenSource stoppedSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource startedSource = new();
+        private readonly CancellationTokenSource stoppingSource = new();
+        private readonly CancellationTokenSource stoppedSource = new();
         private readonly ILogger<ApplicationLifetime> logger;
 
         public ApplicationLifetime(ILogger<ApplicationLifetime> logger)

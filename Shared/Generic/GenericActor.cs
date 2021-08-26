@@ -65,6 +65,9 @@ namespace DAM2.Core.Shared.Generic
             return _actors[key];
         }
 
+#pragma warning disable IDE0060
+        // the methods above are part of API, warning disable
+
         protected Task Stopped(IContext context)
         {
             return Task.CompletedTask;
@@ -94,17 +97,18 @@ namespace DAM2.Core.Shared.Generic
             return Task.CompletedTask;
         }
 
+        protected Task GarbageCollect(IContext context, GarbageCollectCmd cmd)
+        {
+            _logger?.LogInformation("It is time to Garbage Collect");
+            return Task.CompletedTask;
+        }
+#pragma warning restore IDE0060
+
         protected virtual Task Started(IContext context)
         {
             this.pidValues = context.Self.ExtractIdValues();
 
             _logger?.LogInformation("{ActorName} - Started. Eid {Eid}", GetType().Name, pidValues.Eid);
-            return Task.CompletedTask;
-        }
-
-        protected Task GarbageCollect(IContext context, GarbageCollectCmd cmd)
-        {
-            _logger?.LogInformation("It is time to Garbage Collect");
             return Task.CompletedTask;
         }
 
@@ -143,8 +147,5 @@ namespace DAM2.Core.Shared.Generic
             p2 = null;
             return false;
         }
-
-        //string tenant = parts[parts.Length - 2];
-        //string eid = parts[parts.Length - 1];
     }
 }

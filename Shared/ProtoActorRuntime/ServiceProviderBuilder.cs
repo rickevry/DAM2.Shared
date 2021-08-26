@@ -10,8 +10,8 @@ namespace DAM2.Shared.ProtoActorRuntime
 {
     internal class ServiceProviderBuilder
     {
-        private readonly List<Action<HostBuilderContext, IServiceCollection>> configureServicesDelegates = new List<Action<HostBuilderContext, IServiceCollection>>();
-        private readonly List<object> configureContainerDelegates = new List<object>();
+        private readonly List<Action<HostBuilderContext, IServiceCollection>> configureServicesDelegates = new();
+        private readonly List<object> configureContainerDelegates = new();
         private IServiceProviderFactoryAdapter serviceProviderFactory;
 
         /// <summary>
