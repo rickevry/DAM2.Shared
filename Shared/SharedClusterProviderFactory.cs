@@ -1,14 +1,13 @@
 ﻿using DAM2.Core.Shared.Interface;
 using DAM2.Core.Shared.Settings;
+using DAM2.Shared.Settings;
 using k8s;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Proto.Cluster;
 using Proto.Cluster.Consul;
 using Proto.Cluster.Kubernetes;
 using System;
-using System.Runtime.CompilerServices;
-using DAM2.Shared.Settings;
-using Microsoft.Extensions.Options;
 
 namespace DAM2.Core.Shared
 {
@@ -16,7 +15,7 @@ namespace DAM2.Core.Shared
     {
 
         private readonly IClusterSettings _clusterSettings = null;
-        private KubernetesClusterOptions _kubernetesClusterOptions;
+        private readonly KubernetesClusterOptions _kubernetesClusterOptions;
 
         public SharedClusterProviderFactory(IClusterSettings clusterSettings, IOptions<KubernetesClusterOptions> kubernetesClusterOptionAccessor)
         {

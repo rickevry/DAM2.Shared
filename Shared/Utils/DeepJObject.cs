@@ -5,7 +5,6 @@ namespace DAM2.Core.Actors.Shared.Utils
 {
     public class DeepJObject
     {
-
         public static JToken GetValue(JObject jobject, string path)
         {
             try
@@ -13,7 +12,7 @@ namespace DAM2.Core.Actors.Shared.Utils
                 if (jobject != null && !string.IsNullOrEmpty(path))
                 {
                     string[] parts = path.Split(".");
-                    return getValue(jobject, parts);
+                    return GetValue(jobject, parts);
                 }
             }
             catch (Exception e)
@@ -30,7 +29,7 @@ namespace DAM2.Core.Actors.Shared.Utils
                 if (jobject != null && !string.IsNullOrEmpty(path))
                 {
                     string[] parts = path.Split(".");
-                    setValue(jobject, parts, value);
+                    SetValue(jobject, parts, value);
                 }
             } catch (Exception e)
             {
@@ -38,7 +37,7 @@ namespace DAM2.Core.Actors.Shared.Utils
             }
         }
 
-        static JToken getValue(JObject jobject, string[] path)
+        private static JToken GetValue(JObject jobject, string[] path)
         {
             string key = path[0];
             if (path.Length == 1)
@@ -53,11 +52,11 @@ namespace DAM2.Core.Actors.Shared.Utils
                     child = new JObject();
                     jobject[key] = child;
                 }
-                return getValue(child, path[1..]);
+                return GetValue(child, path[1..]);
             }
         }
 
-        static void setValue(JObject jobject, string[] path, object value)
+        private static void SetValue(JObject jobject, string[] path, object value)
         {
             string key = path[0];
             if (path.Length == 1)
@@ -66,9 +65,9 @@ namespace DAM2.Core.Actors.Shared.Utils
                 {
                     jobject[key] = null;
                 }
-                else if (value is JArray)
+                else if (value is JArray jarray)
                 {
-                    jobject[key] = (JArray)value;
+                    jobject[key] = jarray;
                 }
                 else
                 {
@@ -89,7 +88,7 @@ namespace DAM2.Core.Actors.Shared.Utils
                     child = new JObject();
                     jobject[key] = child;
                 }
-                setValue(child, path[1..], value);
+                SetValue(child, path[1..], value);
             }
         }
     }

@@ -17,29 +17,31 @@ namespace DAM2.Core.Actors.Shared.Utils
 
         public static void FromJArray(JObject job, JArray jArray)
         {
-            if (jArray != null)
+            if (jArray == null)
             {
-                foreach (JObject updateObject in jArray)
+                return;
+            }
+
+            foreach (JObject updateObject in jArray)
+            {
+                JToken key = updateObject.GetValue("key");
+                JToken value = updateObject.GetValue("value");
+
+                if (key != null && key.ToString() != "")
                 {
-                    JToken key = updateObject.GetValue("key");
-                    JToken value = updateObject.GetValue("value");
-
-                    if (key != null && key.ToString() != "")
+                    var keyStr = key.ToString();
+                    if (keyStr.StartsWith("props."))
                     {
-                        var keyStr = key.ToString();
-                        if (keyStr.StartsWith("props."))
-                        {
-                            keyStr = keyStr.Substring("props.".Length);
-                        }
+                        keyStr = keyStr.Substring("props.".Length);
+                    }
 
-                        if (value is JValue)
-                        {
-                            SetValue(job, keyStr, (JValue)value);
-                        }
-                        else if (value is JArray)
-                        {
-                            SetValue(job, keyStr, (JArray)value);
-                        }
+                    if (value is JValue jvalue)
+                    {
+                        SetValue(job, keyStr, jvalue);
+                    }
+                    else if (value is JArray array)
+                    {
+                        SetValue(job, keyStr, array);
                     }
                 }
             }

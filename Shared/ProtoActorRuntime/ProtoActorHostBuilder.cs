@@ -27,8 +27,8 @@ namespace DAM2.Shared.ProtoActorRuntime
         private readonly ServiceProviderBuilder serviceProviderBuilder = new();
         public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
-        private readonly List<Action<IConfigurationBuilder>> configureHostConfigActions = new List<Action<IConfigurationBuilder>>();
-        private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> configureAppConfigActions = new List<Action<HostBuilderContext, IConfigurationBuilder>>();
+        private readonly List<Action<IConfigurationBuilder>> configureHostConfigActions = new();
+        private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> configureAppConfigActions = new();
         private HostBuilderContext hostBuilderContext;
         private IConfiguration hostConfiguration;
         private IConfiguration appConfiguration;

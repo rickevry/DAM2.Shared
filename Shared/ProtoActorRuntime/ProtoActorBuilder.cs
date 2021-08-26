@@ -13,8 +13,8 @@ namespace DAM2.Shared.ProtoActorRuntime
     internal class ProtoActorBuilder : IProtoActorBuilder
     {
         private readonly IHostBuilder hostBuilder;
-        private readonly List<Action<Microsoft.Extensions.Hosting.HostBuilderContext, IProtoActorBuilder>> configureClusterDelegates = new List<Action<Microsoft.Extensions.Hosting.HostBuilderContext, IProtoActorBuilder>>();
-        private readonly List<Action<Microsoft.Extensions.Hosting.HostBuilderContext, IServiceCollection>> configureServicesDelegates = new List<Action<Microsoft.Extensions.Hosting.HostBuilderContext, IServiceCollection>>();
+        private readonly List<Action<Microsoft.Extensions.Hosting.HostBuilderContext, IProtoActorBuilder>> configureClusterDelegates = new();
+        private readonly List<Action<Microsoft.Extensions.Hosting.HostBuilderContext, IServiceCollection>> configureServicesDelegates = new();
 
         public IDictionary<object, object> Properties => this.hostBuilder.Properties;
 

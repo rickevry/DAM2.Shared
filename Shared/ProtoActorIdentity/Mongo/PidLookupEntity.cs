@@ -1,3 +1,4 @@
+#nullable enable
 using MongoDB.Bson.Serialization.Attributes;
 
 // ReSharper disable PropertyCanBeMadeInitOnly.Global

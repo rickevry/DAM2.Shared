@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Text;
@@ -12,41 +11,44 @@ namespace DAM2.Shared.Insights
     {
         public class InsightsEvent
         {
+#pragma warning disable IDE1006
             public string eid { get; set; }
             public string name { get; set; }
             public string tenant { get; set; }
             public string msg { get; set; }
             public DateTime? created { get; set; }
-            public String uid { get; set; }
+            public string uid { get; set; }
             public string pid { get; set; }
             public string cid { get; set; }
             public string level { get; set; }
             public string operation { get; set; }
             public string source { get; set; }
             public JObject props { get; set; }
-
+#pragma warning restore IDE1006
         }
 
-        static string url = "https://daminsights1.azurewebsites.net/api/post";
-        static readonly HttpClient _client = new HttpClient();
-        static CultureInfo culture = CultureInfo.InvariantCulture;
+        static readonly string url = "https://daminsights1.azurewebsites.net/api/post";
+        static readonly HttpClient _client = new();
+        static readonly CultureInfo culture = CultureInfo.InvariantCulture;
 
         public static void Post(InsightsEvent e)
         {
             try
             {
 
-                JObject jdata = new JObject();
-                jdata["eid"] = e.eid;
-                jdata["name"] = e.name;
-                jdata["tenant"] = e.tenant;
-                jdata["msg"] = e.msg;
-                jdata["pid"] = e.pid;
-                jdata["cid"] = e.cid;
-                jdata["level"] = e.level;
-                jdata["uid"] = e.uid;
-                jdata["op"] = e.operation;
-                jdata["source"] = e.source ?? "SMH";
+                var jdata = new JObject
+                {
+                    ["eid"] = e.eid,
+                    ["name"] = e.name,
+                    ["tenant"] = e.tenant,
+                    ["msg"] = e.msg,
+                    ["pid"] = e.pid,
+                    ["cid"] = e.cid,
+                    ["level"] = e.level,
+                    ["uid"] = e.uid,
+                    ["op"] = e.operation,
+                    ["source"] = e.source ?? "SMH"
+                };
                 if (!e.created.HasValue)
                 {
                     e.created = DateTime.UtcNow;
