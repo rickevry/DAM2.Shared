@@ -89,6 +89,16 @@ namespace DAM2.Core.Shared.Generic
 
         protected Task ReceiveTimeout(IContext context)
         {
+            try
+            {
+                _logger?.LogInformation("[GenericActor] ReceiveTimeout Stopping");
+                context.Self.Stop(context.System);
+                _logger?.LogInformation("[GenericActor] ReceiveTimeout Stopped");
+            }
+            catch (Exception e)
+            {
+                _logger?.LogError(e, "[GenericActor] ReceiveTimeout failed");
+            }
             return Task.CompletedTask;
         }
 
@@ -109,6 +119,8 @@ namespace DAM2.Core.Shared.Generic
             this.pidValues = context.Self.ExtractIdValues();
 
             _logger?.LogInformation("{ActorName} - Started. Eid {Eid}", GetType().Name, pidValues.Eid);
+
+            context.SetReceiveTimeout(TimeSpan.FromSeconds(30));
             return Task.CompletedTask;
         }
 
