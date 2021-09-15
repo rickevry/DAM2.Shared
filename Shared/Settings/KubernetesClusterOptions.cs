@@ -9,8 +9,7 @@ namespace DAM2.Shared.Settings
     public class KubernetesClusterOptions
     {
 	    public const string Key = "KubernetesCluster";
-
-	    public int WatchTimeoutSeconds { get; set; }
+        public int WatchTimeoutSeconds { get; set; }
 	    public bool DeveloperLogging { get; set; }
     }
 }
