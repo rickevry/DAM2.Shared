@@ -69,6 +69,10 @@ namespace DAM2.Core.Actors.Shared.Utils
                 {
                     jobject[key] = jarray;
                 }
+                else if (value is DateTime dateTime)
+                {
+                    jobject[key] = dateTime;
+                }
                 else
                 {
                     if (value.ToString() == "undefined")
