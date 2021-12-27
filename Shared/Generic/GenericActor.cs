@@ -91,13 +91,20 @@ namespace DAM2.Core.Shared.Generic
         {
             try
             {
-                _logger?.LogInformation("[GenericActor] ReceiveTimeout Stopping");
+                _logger?.LogInformation(
+                    "[GenericActor] ReceiveTimeout Stopping. Actor: {ActorName}, Eid: {Eid}",
+                    GetType().Name,
+                    pidValues?.Eid);
+
                 context.Self.Stop(context.System);
-                _logger?.LogInformation("[GenericActor] ReceiveTimeout Stopped");
             }
             catch (Exception e)
             {
-                _logger?.LogError(e, "[GenericActor] ReceiveTimeout failed");
+                _logger?.LogError(
+                    e,
+                    "[GenericActor] ReceiveTimeout failed. Actor: {ActorName}, Eid: {Eid}",
+                    GetType().Name, 
+                    pidValues?.Eid);
             }
             return Task.CompletedTask;
         }
@@ -109,7 +116,6 @@ namespace DAM2.Core.Shared.Generic
 
         protected Task GarbageCollect(IContext context, GarbageCollectCmd cmd)
         {
-            _logger?.LogInformation("It is time to Garbage Collect");
             return Task.CompletedTask;
         }
 #pragma warning restore IDE0060
