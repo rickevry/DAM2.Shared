@@ -55,13 +55,13 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
-    <PackageReference Include="Proto.Actor" Version="0.22.1-alpha.0.1" />
-    <PackageReference Include="Proto.Cluster" Version="0.22.1-alpha.0.1" />
-    <PackageReference Include="Proto.Cluster.Consul" Version="0.22.1-alpha.0.1" />
+    <PackageReference Include="Proto.Actor" Version="0.26.0" />
+    <PackageReference Include="Proto.Cluster" Version="0.26.0" />
+    <PackageReference Include="Proto.Cluster.Consul" Version="0.26.0" />
     <!--<PackageReference Include="Proto.Cluster.Identity.MongoDb" Version="0.21.1-alpha.0.15" />-->
-    <PackageReference Include="Proto.Cluster.Identity.Redis" Version="0.22.1-alpha.0.1" />
-    <PackageReference Include="Proto.Cluster.Kubernetes" Version="0.22.1-alpha.0.1" />
-    <PackageReference Include="Proto.Remote.GrpcCore" Version="0.22.1-alpha.0.1" />
+    <PackageReference Include="Proto.Cluster.Identity.Redis" Version="0.26.0" />
+    <PackageReference Include="Proto.Cluster.Kubernetes" Version="0.26.0" />
+    <PackageReference Include="Proto.Remote.GrpcCore" Version="0.26.0" />
     <PackageReference Include="Scrutor" Version="3.3.0" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Ubiquitous.Metrics" Version="0.4.0" />
