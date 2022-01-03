@@ -1,9 +1,10 @@
-﻿using Google.Protobuf.Reflection;
+﻿using Proto.Cluster;
+using System.Threading.Tasks;
 
 namespace DAM2.Core.Shared.Interface
 {
-    public interface IDescriptorProvider
+    public interface IMainWorker
     {
-        FileDescriptor[] GetDescriptors();
+        Task Run(Cluster cluster);
     }
 }
