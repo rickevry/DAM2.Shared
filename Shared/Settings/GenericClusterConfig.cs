@@ -34,11 +34,9 @@ namespace DAM2.Core.Shared.Settings
 
             FileDescriptor[] descriptors = descriptorProvider.GetDescriptors();
 
-
             // TOOD: This doesn't seem to work. Why?
             List<ChannelOption> options = new List<ChannelOption>()
             {
-
                 new ChannelOption(ChannelOptions.MaxSendMessageLength, (100 * 1024 * 1024)),
                 new ChannelOption(ChannelOptions.MaxReceiveMessageLength, (100 * 1024 * 1024))
             };
@@ -50,9 +48,10 @@ namespace DAM2.Core.Shared.Settings
                 .WithProtoMessages(descriptors)
                 .WithChannelOptions(options);
 
-            var clusterConfig = ClusterConfig.Setup(clusterName, clusterProvider, identityLookup);
+            var clusterConfig = ClusterConfig
+                .Setup(clusterName, clusterProvider, identityLookup)
+                .WithActorRequestTimeout(TimeSpan.FromDays(7));
             return (clusterConfig, remoteConfig);
-
         }
     }
 }

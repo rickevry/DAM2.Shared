@@ -1,7 +1,6 @@
-﻿using DAM2.Shared.ProtoActorIdentity.Mongo;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using Proto.Cluster.Identity;
-
+using Proto.Cluster.Identity.MongoDb;
 
 namespace DAM2.Core.Shared
 {
@@ -15,14 +14,11 @@ namespace DAM2.Core.Shared
             );
             return identity;
         }
-
         
         private static IMongoDatabase GetMongo(string connectionString, string databaseName)
         {
             var url = MongoUrl.Create(connectionString);
             var settings = MongoClientSettings.FromUrl(url);
-            //settings.WaitQueueTimeout = TimeSpan.FromSeconds(10);
-            //settings.WaitQueueSize = 10000;
             
             var client = new MongoClient(settings);
             var database = client.GetDatabase(databaseName);

@@ -23,18 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ProtoActorIdentity\**" />
-    <EmbeddedResource Remove="ProtoActorIdentity\**" />
-    <None Remove="ProtoActorIdentity\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="Caching\caching.proto" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="ProtoActorIdentity\Mongo\MongoIdentityStorage.cs" />
-    <Compile Include="ProtoActorIdentity\Mongo\PidLookupEntity.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,6 +47,7 @@
     <PackageReference Include="Proto.Actor" Version="0.26.0" />
     <PackageReference Include="Proto.Cluster" Version="0.26.0" />
     <PackageReference Include="Proto.Cluster.Consul" Version="0.26.0" />
+    <PackageReference Include="Proto.Cluster.Identity.MongoDb" Version="0.26.0" />
     <!--<PackageReference Include="Proto.Cluster.Identity.MongoDb" Version="0.21.1-alpha.0.15" />-->
     <PackageReference Include="Proto.Cluster.Identity.Redis" Version="0.26.0" />
     <PackageReference Include="Proto.Cluster.Kubernetes" Version="0.26.0" />
